@@ -177,7 +177,7 @@
             </div>
             <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs">
               <button onclick="setRoleFilter('OPEN')" id="btn-tab-open" class="rounded-md px-2 py-0.5 text-[11px] font-semibold bg-white text-[#2557a7] shadow-xs">
-                Open (4)
+                Open (3)
               </button>
               <button onclick="setRoleFilter('ALL')" id="btn-tab-all" class="rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:text-slate-900">
                 All (15)
@@ -420,7 +420,7 @@
       "Driver cum Electrician – Technical Support Assistant": { all: 189, new: 60, status: "OPEN" },
       "Purchase Executive": { all: 188, new: 48, status: "OPEN" },
       "Marketing & Lead Coordination Executive": { all: 1158, new: 127, status: "OPEN" },
-      "AI Prompt Engineer / Generative AI Executive": { all: 48, new: 12, status: "OPEN" },
+      "AI Prompt Engineer / Generative AI Executive": { all: 48, new: 12, status: "PAUSED" },
       "Driver cum Electrician – Technical Support Assistant (Batch 1)": { all: 236, new: 0, status: "PAUSED" },
       "Urgent Hiring – Data Entry & CRM Executive": { all: 1057, new: 51, status: "PAUSED" },
       "Accounts Executive / Accountant – TallyPrime, GST & TDS": { all: 272, new: 0, status: "PAUSED" },
@@ -584,6 +584,13 @@
 
     function renderRolesList() {
       const container = document.getElementById("roles-list");
+      const openCount = STATE.roles.filter(r => (r.status || "OPEN").toUpperCase() === "OPEN").length;
+      const totalCount = STATE.roles.length;
+      const openBtn = document.getElementById("btn-tab-open");
+      if (openBtn) openBtn.textContent = `Open (${openCount})`;
+      const allBtn = document.getElementById("btn-tab-all");
+      if (allBtn) allBtn.textContent = `All (${totalCount})`;
+
       const filtered = STATE.roles.filter(r => {
         if (STATE.roleFilter === "OPEN") {
           return (r.status || "OPEN").toUpperCase() === "OPEN";
