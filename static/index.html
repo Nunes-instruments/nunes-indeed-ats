@@ -1,302 +1,234 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nunes Instrumentation — Indeed AI Recruitment & Candidate Ranking Cloud</title>
+  <title>Nunes Instruments — Recruitment & Applicant Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; background: #090d16; color: #f1f5f9; }
-    .glass { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
     .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
-    input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    input[type="checkbox"] { accent-color: #2557a7; cursor: pointer; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex flex-col">
 
-  <!-- Toast Notification Banner -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-md rounded-xl p-4 shadow-2xl border transition-all duration-300"></div>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-md rounded-xl p-4 shadow-lg border transition-all duration-300"></div>
 
-  <!-- Top Navigation Header -->
-  <header class="sticky top-0 z-30 glass border-b border-slate-800/80 px-6 py-3.5">
-    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
+  <!-- Top Navigation Bar (White Enterprise Header) -->
+  <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-3.5 shadow-sm">
+    <div class="max-w-[1560px] mx-auto flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-emerald-500 flex items-center justify-center font-extrabold text-xl text-white shadow-lg shadow-indigo-500/20">
+        <div class="w-10 h-10 rounded-lg bg-[#2557a7] flex items-center justify-center font-bold text-lg text-white shadow-sm">
           NI
         </div>
         <div>
           <div class="flex items-center gap-2.5">
-            <h1 class="text-lg font-bold tracking-tight text-white">Nunes Instrumentation — Indeed AI Recruitment Suite</h1>
-            <span class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> PRODUCTION LIVE
+            <h1 class="text-base font-bold text-slate-900 tracking-tight">Nunes Instruments</h1>
+            <span class="text-slate-300">|</span>
+            <span class="text-sm font-medium text-slate-600">Indeed Recruitment Portal</span>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
             </span>
           </div>
-          <p class="text-xs text-slate-400 flex flex-wrap items-center gap-3 mt-0.5">
-            <span>Indeed Employer: <strong class="text-slate-200">nuneslead@gmail.com</strong></span>
-            <span>•</span>
-            <span>AI Engine: <strong class="text-indigo-400" id="header-model">OpenAI gpt-4o-mini</strong></span>
-            <span>•</span>
-            <span class="text-emerald-400 font-medium" id="header-zero-missing">✓ 100% Candidates Ranked (0 Missing)</span>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Official Mail Sender: <strong class="text-slate-800">nuneslead@gmail.com</strong>
           </p>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5">
-        <button onclick="syncFromIndeed()" id="btn-sync" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Sync Indeed Account
+        <button onclick="syncFromIndeed()" id="btn-sync" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-[#2557a7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Sync Indeed
         </button>
-        <button onclick="openJobDescriptionModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          View / Edit Job Description
+        <button onclick="openJobDescriptionModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Job Description
         </button>
-        <button onclick="openEmailLogsModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          Sent Mail Ledger (<span id="header-log-count">0</span>)
+        <button onclick="openEmailLogsModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Sent Emails (<span id="header-log-count">0</span>)
         </button>
       </div>
     </div>
   </header>
 
   <!-- Main Workspace -->
-  <main class="max-w-[1600px] w-full mx-auto px-6 py-5 flex-1 flex flex-col gap-5">
+  <main class="max-w-[1560px] w-full mx-auto px-6 py-5 flex-1 flex flex-col gap-5">
 
-    <!-- Top KPIs + Automatic Interview Timing & Day Rule Engine -->
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
-      <!-- KPI Cards (7 cols) -->
-      <div class="xl:col-span-7 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div class="glass rounded-xl p-3.5 border-l-4 border-l-blue-500">
-          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Ongoing Roles</div>
-          <div class="text-2xl font-extrabold text-white mt-1" id="kpi-roles">6</div>
-          <div class="text-[11px] text-blue-400 mt-0.5">Indeed Employer</div>
-        </div>
-        <div class="glass rounded-xl p-3.5 border-l-4 border-l-indigo-500">
-          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">All Candidates</div>
-          <div class="text-2xl font-extrabold text-white mt-1" id="kpi-candidates">0</div>
-          <div class="text-[11px] text-indigo-400 mt-0.5">0 Missing</div>
-        </div>
-        <div class="glass rounded-xl p-3.5 border-l-4 border-l-emerald-500">
-          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">OpenAI Ranked</div>
-          <div class="text-2xl font-extrabold text-emerald-400 mt-1" id="kpi-ranked">0</div>
-          <div class="text-[11px] text-emerald-400/80 mt-0.5">100% Coverage</div>
-        </div>
-        <div class="glass rounded-xl p-3.5 border-l-4 border-l-amber-500">
-          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Mail 1 (Thank You)</div>
-          <div class="text-2xl font-extrabold text-amber-400 mt-1" id="kpi-mail1">0</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">Initial Ack Sent</div>
-        </div>
-        <div class="glass rounded-xl p-3.5 border-l-4 border-l-purple-500">
-          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Recruiter Checked</div>
-          <div class="text-2xl font-extrabold text-purple-400 mt-1" id="kpi-selected">0</div>
-          <div class="text-[11px] text-purple-400/80 mt-0.5">Selected for Invite</div>
-        </div>
-        <div class="glass rounded-xl p-3.5 border-l-4 border-l-rose-500">
-          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Mail 2 (Interview)</div>
-          <div class="text-2xl font-extrabold text-rose-400 mt-1" id="kpi-mail2">0</div>
-          <div class="text-[11px] text-rose-400/80 mt-0.5">Scheduled @ 11 AM</div>
-        </div>
+    <!-- Top Summary Row -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Active Roles</div>
+        <div class="text-2xl font-bold text-slate-900 mt-1" id="kpi-roles">6</div>
       </div>
-
-      <!-- Interview Day & 11:00 AM Rule Box (5 cols) -->
-      <div class="xl:col-span-5 glass rounded-xl p-4 border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 via-slate-900/90 to-emerald-950/30 flex flex-col justify-between">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-              Auto Interview Scheduling Rule (11:00 AM)
-            </span>
-            <span class="text-xs text-slate-300 font-medium" id="schedule-rule-text">Accepted Tuesday → Assigned Wednesday @ 11:00 AM</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <label class="text-[11px] text-slate-400">If Recruiter Accepts On:</label>
-            <select id="approval-day-select" onchange="onApprovalDayChange()" class="bg-slate-800 text-xs font-semibold text-white rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none focus:border-indigo-500">
-              <option value="">Today (Auto)</option>
-              <option value="Monday">Monday (→ Tue 11 AM)</option>
-              <option value="Tuesday">Tuesday (→ Wed 11 AM)</option>
-              <option value="Wednesday">Wednesday (→ Thu 11 AM)</option>
-              <option value="Thursday">Thursday (→ Fri 11 AM)</option>
-              <option value="Friday">Friday (→ Mon 11 AM ★)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mt-2.5 grid grid-cols-5 gap-1.5 text-center text-[11px]">
-          <div id="rule-pill-Monday" class="rounded-lg py-1.5 px-1 bg-slate-800/80 border border-slate-700/70">
-            <div class="text-slate-400 text-[10px]">Accept Mon</div>
-            <div class="font-bold text-emerald-400">Tue • 11 AM</div>
-          </div>
-          <div id="rule-pill-Tuesday" class="rounded-lg py-1.5 px-1 bg-slate-800/80 border border-slate-700/70">
-            <div class="text-slate-400 text-[10px]">Accept Tue</div>
-            <div class="font-bold text-emerald-400">Wed • 11 AM</div>
-          </div>
-          <div id="rule-pill-Wednesday" class="rounded-lg py-1.5 px-1 bg-slate-800/80 border border-slate-700/70">
-            <div class="text-slate-400 text-[10px]">Accept Wed</div>
-            <div class="font-bold text-emerald-400">Thu • 11 AM</div>
-          </div>
-          <div id="rule-pill-Thursday" class="rounded-lg py-1.5 px-1 bg-slate-800/80 border border-slate-700/70">
-            <div class="text-slate-400 text-[10px]">Accept Thu</div>
-            <div class="font-bold text-emerald-400">Fri • 11 AM</div>
-          </div>
-          <div id="rule-pill-Friday" class="rounded-lg py-1.5 px-1 bg-amber-500/10 border border-amber-500/40">
-            <div class="text-amber-300 text-[10px] font-semibold">Accept Fri ★</div>
-            <div class="font-bold text-amber-400">Mon • 11 AM</div>
-          </div>
-        </div>
-
-        <div class="mt-2.5 flex items-center justify-between text-xs pt-2 border-t border-slate-800/80">
-          <span class="text-slate-400">Assigned Interview Slot for Mail 2:</span>
-          <span class="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30" id="active-interview-slot">
-            Wednesday, 14 Oct 2026 at 11:00 AM IST
-          </span>
-        </div>
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Total Applicants</div>
+        <div class="text-2xl font-bold text-slate-900 mt-1" id="kpi-candidates">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">AI Ranked</div>
+        <div class="text-2xl font-bold text-[#2557a7] mt-1" id="kpi-ranked">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Thank You Sent</div>
+        <div class="text-2xl font-bold text-amber-600 mt-1" id="kpi-mail1">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Selected</div>
+        <div class="text-2xl font-bold text-indigo-600 mt-1" id="kpi-selected">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+        <div class="text-xs font-medium text-slate-500">Interview Invited</div>
+        <div class="text-2xl font-bold text-emerald-600 mt-1" id="kpi-mail2">0</div>
       </div>
     </div>
 
-    <!-- Main Split Layout: Left = Ongoing Company Roles | Right = Ranked Candidates & Recruiter Actions -->
+    <!-- Main Split Layout: Left = Roles | Right = Clean Candidate List -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
 
-      <!-- Left Column: Ongoing Company Roles List (3 cols) -->
+      <!-- Left Sidebar: Company Roles (3 cols) -->
       <div class="lg:col-span-3 flex flex-col gap-3">
-        <div class="glass rounded-xl p-4 flex flex-col gap-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-sm font-bold text-white uppercase tracking-wider">1. Company Ongoing Roles</h2>
-              <p class="text-[11px] text-slate-400">Select a role to view & rank all candidates</p>
-            </div>
-            <span class="px-2 py-0.5 text-xs font-bold rounded bg-blue-500/20 text-blue-400" id="roles-count-badge">6 Roles</span>
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Open Positions</h2>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-[#2557a7]" id="roles-count-badge">6 Roles</span>
           </div>
 
-          <div id="roles-list" class="flex flex-col gap-2.5 max-h-[680px] overflow-y-auto custom-scroll pr-1">
+          <div id="roles-list" class="flex flex-col gap-2 max-h-[700px] overflow-y-auto custom-scroll pr-1">
             <!-- Populated dynamically -->
           </div>
         </div>
       </div>
 
-      <!-- Right Column: Candidate Ranking & 2-Stage Email Workflow (9 cols) -->
+      <!-- Right Area: Candidate Table & Actions (9 cols) -->
       <div class="lg:col-span-9 flex flex-col gap-4">
 
-        <!-- Role Header + 3-Task Action Bar -->
-        <div class="glass rounded-xl p-4 flex flex-col gap-4">
-          <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-800 pb-3.5">
+        <!-- Role Header + Primary Actions -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <div class="flex items-center gap-2.5">
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">ONGOING ROLE</span>
-                <h2 class="text-lg font-extrabold text-white" id="current-role-title">Loading Role...</h2>
-              </div>
-              <p class="text-xs text-slate-400 mt-1" id="current-role-meta">Rathinapuri, Coimbatore, Tamil Nadu • Full-Time</p>
+              <h2 class="text-lg font-bold text-slate-900" id="current-role-title">Loading...</h2>
+              <p class="text-xs text-slate-500 mt-0.5" id="current-role-meta">Coimbatore, Tamil Nadu</p>
             </div>
 
-            <!-- The 3 Core Workflow Actions -->
+            <!-- Action Buttons -->
             <div class="flex flex-wrap items-center gap-2.5">
-              <!-- Task 1: Send Mail 1 (Thank You Mail) -->
-              <button onclick="sendThankYouMailBatch()" id="btn-mail1" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition flex items-center gap-2">
-                <span>📨 1st Mail: Send "Thank You for Applying"</span>
-                <span id="btn-mail1-badge" class="px-1.5 py-0.5 rounded bg-slate-950/20 text-[11px]">All Pending</span>
+              <button onclick="sendThankYouMailBatch()" id="btn-mail1" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-2">
+                <span>Send Thank You Mail</span>
+                <span id="btn-mail1-badge" class="px-1.5 py-0.5 rounded bg-amber-200/60 text-amber-900 text-[11px]">Pending</span>
               </button>
 
-              <!-- Task 2: Run OpenAI Ranking Process -->
-              <button onclick="runOpenAIRankingForCurrentRole()" id="btn-rank" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 transition flex items-center gap-2">
-                <span>🤖 Run OpenAI Ranking (JD Match)</span>
+              <button onclick="runOpenAIRankingForCurrentRole()" id="btn-rank" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition flex items-center gap-1.5">
+                <span>Re-Rank Candidates</span>
               </button>
 
-              <!-- Task 3: Send Mail 2 (Interview Invite @ 11:00 AM to Selected) -->
-              <button onclick="sendInterviewMailToSelected()" id="btn-mail2" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition flex items-center gap-2">
-                <span>📅 2nd Mail: Send Interview Invite (11:00 AM)</span>
-                <span id="btn-mail2-badge" class="px-1.5 py-0.5 rounded bg-slate-950/20 text-[11px]">0 Selected</span>
+              <button onclick="sendInterviewMailToSelected()" id="btn-mail2" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-sm transition flex items-center gap-2">
+                <span>Send Interview Invite</span>
+                <span id="btn-mail2-badge" class="px-1.5 py-0.5 rounded bg-white/20 text-white text-[11px]">0 Selected</span>
               </button>
             </div>
           </div>
 
-          <!-- Recruiter Checkbox Selection & Filter Toolbar -->
+          <!-- Filter, Quick Select & Interview Schedule Bar -->
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs font-semibold text-slate-300 mr-1">Recruiter Quick Select:</span>
-              <button onclick="selectCandidatesByRule('ALL')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-                ☑ Select All (<span id="count-all-role">0</span>)
+            <!-- Quick Selection Buttons -->
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button onclick="selectCandidatesByRule('ALL')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                Select All (<span id="count-all-role">0</span>)
               </button>
-              <button onclick="selectCandidatesByRule('SHORTLIST')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition">
-                ★ Select Shortlisted (<span id="count-shortlist-role">0</span>)
+              <button onclick="selectCandidatesByRule('SHORTLIST')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition">
+                Shortlisted (<span id="count-shortlist-role">0</span>)
               </button>
-              <button onclick="selectCandidatesByRule('TOP5')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition">
-                🏆 Select Top 5
+              <button onclick="selectCandidatesByRule('TOP5')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 hover:bg-blue-100 text-[#2557a7] border border-blue-200 transition">
+                Top 5
               </button>
-              <button onclick="selectCandidatesByRule('TOP10')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition">
-                🏆 Select Top 10
+              <button onclick="selectCandidatesByRule('TOP10')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 hover:bg-blue-100 text-[#2557a7] border border-blue-200 transition">
+                Top 10
               </button>
-              <button onclick="selectCandidatesByRule('NONE')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700 transition">
-                ✕ Clear Checkboxes
+              <button onclick="selectCandidatesByRule('NONE')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition">
+                Clear
               </button>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <!-- Interview Slot Selector & Search -->
+            <div class="flex flex-wrap items-center gap-2.5">
+              <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1">
+                <span class="text-[11px] text-slate-500">Interview Slot:</span>
+                <span class="text-xs font-semibold text-emerald-700" id="active-interview-slot">Tomorrow, 11:00 AM</span>
+                <select id="approval-day-select" onchange="onApprovalDayChange()" class="bg-white text-[11px] font-medium text-slate-700 rounded px-1.5 py-0.5 border border-slate-200 focus:outline-none">
+                  <option value="">Auto (Today)</option>
+                  <option value="Monday">Accept Mon → Tue 11 AM</option>
+                  <option value="Tuesday">Accept Tue → Wed 11 AM</option>
+                  <option value="Wednesday">Accept Wed → Thu 11 AM</option>
+                  <option value="Thursday">Accept Thu → Fri 11 AM</option>
+                  <option value="Friday">Accept Fri → Mon 11 AM</option>
+                </select>
+              </div>
+
               <div class="relative">
                 <input
                   type="text"
                   id="search-input"
                   oninput="renderCandidateTable()"
-                  placeholder="Search name, skill, email, location..."
-                  class="bg-slate-900/90 text-xs text-white rounded-lg pl-8 pr-3 py-1.5 border border-slate-700 focus:outline-none focus:border-indigo-500 w-60"
+                  placeholder="Search applicant..."
+                  class="bg-white text-xs text-slate-800 rounded-lg pl-8 pr-3 py-1.5 border border-slate-300 focus:outline-none focus:border-[#2557a7] w-48"
                 />
                 <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               </div>
 
-              <select id="tier-filter" onchange="renderCandidateTable()" class="bg-slate-900 text-xs text-slate-200 rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-indigo-500">
-                <option value="ALL">Show All Candidates (0 Missing)</option>
-                <option value="SHORTLIST">Shortlisted Only (Score ≥ 75)</option>
-                <option value="SELECTED">Recruiter Checked (☑)</option>
-                <option value="MAIL1_PENDING">Mail 1 Pending</option>
-                <option value="MAIL2_SENT">Mail 2 (Interview) Sent</option>
+              <select id="tier-filter" onchange="renderCandidateTable()" class="bg-white text-xs text-slate-700 rounded-lg px-2.5 py-1.5 border border-slate-300 focus:outline-none focus:border-[#2557a7]">
+                <option value="ALL">All Candidates</option>
+                <option value="SHORTLIST">Shortlisted</option>
+                <option value="SELECTED">Selected</option>
+                <option value="MAIL1_PENDING">Thank You Pending</option>
+                <option value="MAIL2_SENT">Interview Scheduled</option>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Candidate Ranking Table -->
-        <div class="glass rounded-xl overflow-hidden flex-1 flex flex-col">
+        <!-- Clean, Uncluttered Candidate Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
           <div class="overflow-x-auto custom-scroll flex-1">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-slate-900/95 border-b border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <th class="py-3.5 px-4 w-12 text-center">
-                    <input type="checkbox" id="master-checkbox" onchange="onMasterCheckboxChange(this.checked)" class="w-4 h-4 rounded" title="Select/Deselect All Visible Candidates" />
+                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th class="py-3 px-4 w-10 text-center">
+                    <input type="checkbox" id="master-checkbox" onchange="onMasterCheckboxChange(this.checked)" class="w-4 h-4 rounded" />
                   </th>
-                  <th class="py-3.5 px-3 w-20 text-center">Rank</th>
-                  <th class="py-3.5 px-4">Candidate Details & Contact</th>
-                  <th class="py-3.5 px-3 w-36 text-center">OpenAI Score</th>
-                  <th class="py-3.5 px-4">Job Description Match & AI Evaluation</th>
-                  <th class="py-3.5 px-3 w-44 text-center">1st Mail (Thank You)</th>
-                  <th class="py-3.5 px-4 w-52 text-center">2nd Mail (Interview @ 11 AM)</th>
+                  <th class="py-3 px-3 w-16 text-center">Rank</th>
+                  <th class="py-3 px-4">Candidate</th>
+                  <th class="py-3 px-4">Phone & Email</th>
+                  <th class="py-3 px-3 w-36 text-center">Match Score</th>
+                  <th class="py-3 px-3 w-36 text-center">Thank You Mail</th>
+                  <th class="py-3 px-3 w-44 text-center">Interview Mail</th>
+                  <th class="py-3 px-4 w-28 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody id="candidates-tbody" class="divide-y divide-slate-800/70 text-xs">
+              <tbody id="candidates-tbody" class="divide-y divide-slate-100 text-xs">
                 <!-- Populated dynamically -->
               </tbody>
             </table>
           </div>
 
-          <!-- Table Footer Summary -->
-          <div class="bg-slate-900/90 border-t border-slate-800 px-5 py-3 flex flex-wrap items-center justify-between text-xs text-slate-400">
-            <div id="table-footer-left">Showing 0 of 0 candidates • 100% Ranked (Zero Missing)</div>
+          <!-- Table Footer -->
+          <div class="bg-slate-50 border-t border-slate-200 px-5 py-3 flex flex-wrap items-center justify-between text-xs text-slate-500">
+            <div id="table-footer-left">Showing 0 candidates</div>
             <div class="flex items-center gap-4">
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Shortlist (≥75)</span>
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Consider (60–74)</span>
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span> Review (&lt;60)</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Shortlisted (≥75%)</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Consider (60–74%)</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-400"></span> Review (&lt;60%)</span>
             </div>
           </div>
         </div>
@@ -305,15 +237,15 @@
     </div>
   </main>
 
-  <!-- Modal 1: Candidate Resume & AI Deep Evaluation Viewer -->
-  <div id="candidate-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-700 shadow-2xl">
-      <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+  <!-- Modal 1: Candidate Profile & Resume Viewer -->
+  <div id="candidate-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl">
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-white" id="modal-cand-name">Candidate Profile</h3>
-          <p class="text-xs text-slate-400" id="modal-cand-role">Role</p>
+          <h3 class="text-base font-bold text-slate-900" id="modal-cand-name">Candidate Profile</h3>
+          <p class="text-xs text-slate-500" id="modal-cand-role">Role</p>
         </div>
-        <button onclick="closeCandidateModal()" class="text-slate-400 hover:text-white text-xl font-bold px-2">✕</button>
+        <button onclick="closeCandidateModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2">✕</button>
       </div>
       <div class="p-6 overflow-y-auto custom-scroll space-y-4 text-xs" id="modal-cand-body">
         <!-- Populated dynamically -->
@@ -321,40 +253,40 @@
     </div>
   </div>
 
-  <!-- Modal 2: Job Description Viewer & Editor -->
-  <div id="jd-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-700 shadow-2xl">
-      <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+  <!-- Modal 2: Job Description Editor -->
+  <div id="jd-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl">
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-white">Role Job Description (OpenAI Ranking Criteria)</h3>
-          <p class="text-xs text-slate-400" id="jd-modal-role-title">Edit Job Description and re-rank all candidates</p>
+          <h3 class="text-base font-bold text-slate-900">Job Description</h3>
+          <p class="text-xs text-slate-500" id="jd-modal-role-title">Role</p>
         </div>
-        <button onclick="closeJobDescriptionModal()" class="text-slate-400 hover:text-white text-xl font-bold px-2">✕</button>
+        <button onclick="closeJobDescriptionModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2">✕</button>
       </div>
       <div class="p-6 overflow-y-auto custom-scroll space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Job Description Text:</label>
-          <textarea id="jd-textarea" rows="14" class="w-full bg-slate-950 text-xs text-slate-200 rounded-xl p-3.5 border border-slate-700 focus:outline-none focus:border-indigo-500 font-mono leading-relaxed"></textarea>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Role Description & Requirements:</label>
+          <textarea id="jd-textarea" rows="13" class="w-full bg-slate-50 text-xs text-slate-800 rounded-xl p-3.5 border border-slate-300 focus:outline-none focus:border-[#2557a7] leading-relaxed"></textarea>
         </div>
-        <div class="flex items-center justify-end gap-3 pt-2">
-          <button onclick="closeJobDescriptionModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
-          <button onclick="saveJobDescriptionAndRank()" id="btn-save-jd" class="px-5 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg">
-            Save JD & Re-Rank All Candidates with OpenAI
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button onclick="closeJobDescriptionModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Cancel</button>
+          <button onclick="saveJobDescriptionAndRank()" id="btn-save-jd" class="px-5 py-2 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-sm">
+            Save & Re-Rank Candidates
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal 3: Sent Emails Audit Ledger -->
-  <div id="logs-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass rounded-2xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-700 shadow-2xl">
-      <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+  <!-- Modal 3: Sent Emails Log -->
+  <div id="logs-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl">
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-white">Sent Mail Audit Ledger (Mail 1: Thank You & Mail 2: Interview @ 11:00 AM)</h3>
-          <p class="text-xs text-slate-400">Sent via nuneslead@gmail.com</p>
+          <h3 class="text-base font-bold text-slate-900">Sent Emails History</h3>
+          <p class="text-xs text-slate-500">Dispatched via nuneslead@gmail.com</p>
         </div>
-        <button onclick="closeEmailLogsModal()" class="text-slate-400 hover:text-white text-xl font-bold px-2">✕</button>
+        <button onclick="closeEmailLogsModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2">✕</button>
       </div>
       <div class="p-6 overflow-y-auto custom-scroll space-y-3 text-xs" id="logs-modal-body">
         <!-- Populated dynamically -->
@@ -374,15 +306,15 @@
 
     function showToast(msg, type = "success") {
       const el = document.getElementById("toast");
-      el.className = `fixed bottom-5 right-5 z-50 max-w-md rounded-xl p-4 shadow-2xl border transition-all duration-300 text-xs font-semibold flex items-center gap-2.5 ${
+      el.className = `fixed bottom-5 right-5 z-50 max-w-md rounded-xl p-4 shadow-lg border transition-all duration-300 text-xs font-semibold flex items-center gap-2.5 ${
         type === "error"
-          ? "bg-rose-950/95 border-rose-500 text-rose-200"
-          : "bg-emerald-950/95 border-emerald-500 text-emerald-200"
+          ? "bg-rose-50 border-rose-300 text-rose-800"
+          : "bg-emerald-50 border-emerald-300 text-emerald-800"
       }`;
-      el.innerHTML = `<span>${type === "error" ? "⚠️" : "✅"}</span><div>${msg}</div>`;
+      el.innerHTML = `<span>${type === "error" ? "⚠️" : "✓"}</span><div>${msg}</div>`;
       el.classList.remove("hidden");
       clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => el.classList.add("hidden"), 5000);
+      window._toastTimer = setTimeout(() => el.classList.add("hidden"), 4500);
     }
 
     async function loadDashboard() {
@@ -394,7 +326,6 @@
         STATE.roles = data.roles || [];
         STATE.emailLogs = data.recent_email_logs || [];
 
-        // Update KPIs
         document.getElementById("kpi-roles").textContent = data.kpis.total_roles;
         document.getElementById("kpi-candidates").textContent = data.kpis.total_candidates;
         document.getElementById("kpi-ranked").textContent = data.kpis.total_ranked;
@@ -404,28 +335,14 @@
         document.getElementById("header-log-count").textContent = STATE.emailLogs.length;
         document.getElementById("roles-count-badge").textContent = `${STATE.roles.length} Roles`;
 
-        // Update Interview Schedule Rule Box
         const sched = data.interview_schedule;
-        document.getElementById("schedule-rule-text").textContent = sched.rule_applied;
-        document.getElementById("active-interview-slot").textContent = sched.interview_label;
-
-        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].forEach(d => {
-          const pill = document.getElementById(`rule-pill-${d}`);
-          if (!pill) return;
-          if (sched.approval_day === d) {
-            pill.className = "rounded-lg py-1.5 px-1 bg-indigo-600/30 border-2 border-indigo-400 shadow-md shadow-indigo-500/20 scale-[1.03] transition";
-          } else if (d === "Friday") {
-            pill.className = "rounded-lg py-1.5 px-1 bg-amber-500/10 border border-amber-500/40 opacity-80";
-          } else {
-            pill.className = "rounded-lg py-1.5 px-1 bg-slate-800/80 border border-slate-700/70 opacity-80";
-          }
-        });
+        document.getElementById("active-interview-slot").textContent = `${sched.interview_day}, ${sched.interview_date} • 11:00 AM`;
 
         renderRolesList();
         await loadCandidatesForRole(STATE.currentRole);
       } catch (e) {
         console.error(e);
-        showToast("Failed to load dashboard overview: " + e.message, "error");
+        showToast("Failed to load dashboard: " + e.message, "error");
       }
     }
 
@@ -437,32 +354,20 @@
           <div onclick="selectRole('${r.title.replace(/'/g, "\\'")}')"
                class="cursor-pointer rounded-xl p-3.5 transition border ${
                  active
-                   ? "bg-indigo-600/20 border-indigo-500 shadow-lg shadow-indigo-500/10"
-                   : "bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-800/50"
+                   ? "bg-blue-50/70 border-[#2557a7] shadow-xs"
+                   : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                }">
             <div class="flex items-start justify-between gap-2">
-              <div class="font-bold text-xs ${active ? "text-white" : "text-slate-200"} leading-snug">${r.title}</div>
-              <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-500/15 text-emerald-400 shrink-0">${r.status}</span>
+              <div class="font-semibold text-xs ${active ? "text-[#2557a7]" : "text-slate-800"} leading-snug">${r.title}</div>
+              <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full ${
+                active ? "bg-[#2557a7] text-white" : "bg-slate-100 text-slate-700"
+              } shrink-0">${r.total_candidates}</span>
             </div>
-            <div class="text-[11px] text-slate-400 mt-1 truncate">${r.location}</div>
-
-            <div class="grid grid-cols-4 gap-1.5 mt-3 pt-2.5 border-t border-slate-800/80 text-center">
-              <div class="bg-slate-950/60 rounded py-1">
-                <div class="text-[10px] text-slate-400">Total</div>
-                <div class="text-xs font-bold text-white">${r.total_candidates}</div>
-              </div>
-              <div class="bg-slate-950/60 rounded py-1">
-                <div class="text-[10px] text-slate-400">Ranked</div>
-                <div class="text-xs font-bold text-emerald-400">${r.ranked_candidates}/${r.total_candidates}</div>
-              </div>
-              <div class="bg-slate-950/60 rounded py-1">
-                <div class="text-[10px] text-slate-400">Mail 1</div>
-                <div class="text-xs font-bold text-amber-400">${r.mail1_sent_count}</div>
-              </div>
-              <div class="bg-slate-950/60 rounded py-1">
-                <div class="text-[10px] text-slate-400">Mail 2</div>
-                <div class="text-xs font-bold text-rose-400">${r.mail2_sent_count}</div>
-              </div>
+            <div class="text-[11px] text-slate-500 mt-1 truncate">${r.location}</div>
+            <div class="flex items-center gap-3 mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+              <span>Shortlisted: <strong class="text-emerald-700">${r.shortlisted_count}</strong></span>
+              <span>•</span>
+              <span>Invited: <strong class="text-[#2557a7]">${r.mail2_sent_count}</strong></span>
             </div>
           </div>
         `;
@@ -480,7 +385,7 @@
       if (roleObj) {
         document.getElementById("current-role-title").textContent = roleObj.title;
         document.getElementById("current-role-meta").textContent =
-          `${roleObj.location} • ${roleObj.department || "Full-Time"} • Salary: ${roleObj.salary || "Standard"} • ${roleObj.total_candidates} Candidates (0 Missing)`;
+          `${roleObj.location} • ${roleObj.job_type || "Full-Time"} • ${roleObj.total_candidates} Applicants`;
       }
 
       const res = await fetch(`/api/candidates?role=${encodeURIComponent(roleTitle)}`);
@@ -499,7 +404,7 @@
         if (tier === "MAIL1_PENDING" && c.mail1_status === "SENT") return false;
         if (tier === "MAIL2_SENT" && c.mail2_status !== "SENT") return false;
         if (q) {
-          const hay = `${c.name} ${c.email} ${c.location} ${c.experience_summary} ${(c.matched_skills || []).join(" ")} ${c.ai_strengths}`.toLowerCase();
+          const hay = `${c.name} ${c.email} ${c.phone} ${c.location}`.toLowerCase();
           if (!hay.includes(q)) return false;
         }
         return true;
@@ -519,37 +424,30 @@
       document.getElementById("count-shortlist-role").textContent = shortlistRole;
       document.getElementById("btn-mail2-badge").textContent = `${selectedRole} Selected`;
       document.getElementById("btn-mail1-badge").textContent =
-        selectedRole > 0 ? `${selectedRole} Checked` : `${mail1PendingRole} Pending`;
+        selectedRole > 0 ? `${selectedRole} Selected` : `${mail1PendingRole} Pending`;
       document.getElementById("table-footer-left").textContent =
-        `Showing ${filtered.length} of ${totalRole} candidates for "${STATE.currentRole}" • 100% Ranked (0 Missing)`;
+        `Showing ${filtered.length} of ${totalRole} candidates`;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-slate-400">No candidates match the current filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-slate-400">No candidates found matching this filter.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = filtered.map(c => {
-        const rankBadgeClass =
-          c.rank_position === 1 ? "bg-amber-400 text-slate-950 font-extrabold shadow shadow-amber-400/30" :
-          c.rank_position === 2 ? "bg-slate-300 text-slate-950 font-extrabold" :
-          c.rank_position === 3 ? "bg-amber-700 text-white font-extrabold" :
-          "bg-slate-800 text-slate-200 border border-slate-700 font-bold";
+        const rankStyle =
+          c.rank_position <= 3
+            ? "bg-blue-50 text-[#2557a7] border border-blue-200 font-bold"
+            : "bg-slate-100 text-slate-600 font-semibold";
 
-        const recBadgeClass =
-          c.recommendation === "Shortlist" ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" :
-          c.recommendation === "Consider" ? "bg-amber-500/20 text-amber-300 border-amber-500/40" :
-          "bg-blue-500/20 text-blue-300 border-blue-500/40";
-
-        const scoreBarColor =
-          c.ai_score >= 75 ? "bg-emerald-500" :
-          c.ai_score >= 60 ? "bg-amber-500" : "bg-blue-500";
-
-        const skillsHtml = (c.matched_skills || []).slice(0, 4).map(s =>
-          `<span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-indigo-300 border border-slate-700">${s}</span>`
-        ).join(" ");
+        const badgeStyle =
+          c.recommendation === "Shortlist"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+            : c.recommendation === "Consider"
+            ? "bg-amber-50 text-amber-700 border-amber-200"
+            : "bg-slate-100 text-slate-600 border-slate-200";
 
         return `
-          <tr class="hover:bg-slate-800/40 transition ${c.selected_by_recruiter ? "bg-indigo-950/25" : ""}">
+          <tr class="hover:bg-slate-50/90 transition ${c.selected_by_recruiter ? "bg-blue-50/40" : ""}">
             <!-- Checkbox -->
             <td class="py-3 px-4 text-center">
               <input type="checkbox"
@@ -560,75 +458,66 @@
 
             <!-- Rank -->
             <td class="py-3 px-3 text-center">
-              <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-mono ${rankBadgeClass}">
+              <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-xs ${rankStyle}">
                 #${c.rank_position}
               </span>
             </td>
 
-            <!-- Candidate Info -->
+            <!-- Candidate Name & Location (Clean & Simple) -->
             <td class="py-3 px-4">
-              <div class="font-bold text-white text-sm flex items-center gap-2">
-                <span>${c.name}</span>
-                <button onclick="openCandidateModal(${c.id})" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-slate-700 transition">
-                  View Profile
-                </button>
+              <div class="font-semibold text-slate-900 text-sm cursor-pointer hover:text-[#2557a7]" onclick="openCandidateModal(${c.id})">
+                ${c.name}
               </div>
-              <div class="text-[11px] text-slate-400 mt-0.5 flex flex-wrap items-center gap-2">
-                <span class="font-mono text-slate-300">${c.email}</span>
-                <span>•</span>
-                <span>${c.phone}</span>
-              </div>
-              <div class="text-[11px] text-slate-500 mt-0.5">📍 ${c.location}</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">${c.location || "Coimbatore"}</div>
             </td>
 
-            <!-- OpenAI Score -->
+            <!-- Contact Info -->
+            <td class="py-3 px-4">
+              <div class="text-xs text-slate-800 font-medium">${c.phone || "—"}</div>
+              <div class="text-[11px] text-slate-500 truncate max-w-[210px]" title="${c.email}">${c.email}</div>
+            </td>
+
+            <!-- Match Score -->
             <td class="py-3 px-3 text-center">
-              <div class="text-base font-extrabold text-white font-mono">${Number(c.ai_score).toFixed(1)}%</div>
-              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden my-1">
-                <div class="${scoreBarColor} h-full rounded-full" style="width: ${Math.min(100, c.ai_score)}%"></div>
+              <div class="inline-flex items-center gap-1.5">
+                <span class="text-sm font-bold text-slate-900">${Math.round(c.ai_score)}%</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badgeStyle}">
+                  ${c.recommendation}
+                </span>
               </div>
-              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${recBadgeClass}">
-                ${c.recommendation}
-              </span>
             </td>
 
-            <!-- JD Match & AI Strengths -->
-            <td class="py-3 px-4 max-w-md">
-              <div class="font-semibold text-slate-200 text-xs">${c.experience_summary || "Verified Applicant"}</div>
-              <div class="flex flex-wrap gap-1 my-1">${skillsHtml}</div>
-              <div class="text-[11px] text-slate-400 line-clamp-2">${c.ai_strengths || ""}</div>
-            </td>
-
-            <!-- Mail 1: Thank You Mail -->
+            <!-- Mail 1: Thank You -->
             <td class="py-3 px-3 text-center">
               ${
                 c.mail1_status === "SENT"
-                  ? `<div class="inline-flex flex-col items-center">
-                       <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                         ✓ MAIL 1 SENT
-                       </span>
-                       <button onclick="sendSingleThankYou(${c.id}, true)" class="text-[10px] text-slate-400 hover:text-amber-300 underline mt-1">Resend Mail 1</button>
-                     </div>`
-                  : `<button onclick="sendSingleThankYou(${c.id}, false)" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 transition">
-                       📨 Send Thank You
+                  ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                       ✓ Sent
+                     </span>`
+                  : `<button onclick="sendSingleThankYou(${c.id}, false)" class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition">
+                       Send Thank You
                      </button>`
               }
             </td>
 
-            <!-- Mail 2: Interview Mail @ 11:00 AM -->
-            <td class="py-3 px-4 text-center">
+            <!-- Mail 2: Interview -->
+            <td class="py-3 px-3 text-center">
               ${
                 c.mail2_status === "SENT"
-                  ? `<div class="inline-flex flex-col items-center">
-                       <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-                         📅 ${c.interview_day || "Scheduled"}, ${c.interview_date || ""} • 11:00 AM
-                       </span>
-                       <button onclick="sendSingleInterview(${c.id})" class="text-[10px] text-slate-400 hover:text-emerald-300 underline mt-1">Resend Invite (11 AM)</button>
-                     </div>`
-                  : `<button onclick="sendSingleInterview(${c.id})" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 border border-emerald-500/40 transition">
-                       📅 Invite @ 11:00 AM
+                  ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-50 text-[#2557a7] border border-blue-200">
+                       ✓ ${c.interview_day || "Invited"} 11 AM
+                     </span>`
+                  : `<button onclick="sendSingleInterview(${c.id})" class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-white hover:bg-blue-50 text-[#2557a7] border border-blue-200 transition">
+                       Invite (11 AM)
                      </button>`
               }
+            </td>
+
+            <!-- Details Button -->
+            <td class="py-3 px-4 text-right">
+              <button onclick="openCandidateModal(${c.id})" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition">
+                View
+              </button>
             </td>
           </tr>
         `;
@@ -644,7 +533,6 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidate_ids: [id], selected: checked })
       });
-      // Update KPI
       const res = await fetch("/api/overview");
       const ov = await res.json();
       document.getElementById("kpi-selected").textContent = ov.kpis.recruiter_selected;
@@ -682,7 +570,6 @@
       }
 
       if (rule !== "NONE" && rule !== "ALL") {
-        // First clear existing selection in this role so Top 5 / Shortlist is exact
         const allIds = STATE.candidates.map(c => c.id);
         await fetch("/api/candidates/select", {
           method: "POST",
@@ -699,8 +586,8 @@
 
       showToast(
         selectFlag
-          ? `Selected ${targetIds.length} candidate(s) in "${STATE.currentRole}". Ready to send 2nd Mail (Interview @ 11:00 AM)!`
-          : `Cleared candidate checkboxes for "${STATE.currentRole}".`
+          ? `Selected ${targetIds.length} candidate(s).`
+          : `Cleared selection.`
       );
       await loadDashboard();
     }
@@ -709,11 +596,11 @@
       STATE.approvalDayOverride = document.getElementById("approval-day-select").value;
       await loadDashboard();
       const sched = STATE.overview.interview_schedule;
-      showToast(`Interview Rule Updated: ${sched.rule_applied} (${sched.interview_label})`);
+      showToast(`Interview slot set to ${sched.interview_label}`);
     }
 
     async function sendSingleThankYou(id, forceResend = false) {
-      showToast("Sending Mail 1 (Thank You for Applying) via nuneslead@gmail.com...");
+      showToast("Sending Thank You email via nuneslead@gmail.com...");
       const res = await fetch("/api/mail/send-thank-you", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -724,7 +611,7 @@
         showToast(data.message);
         await loadDashboard();
       } else {
-        showToast(data.detail || "Error sending Mail 1", "error");
+        showToast(data.detail || "Error sending email", "error");
       }
     }
 
@@ -733,11 +620,7 @@
       const btn = document.getElementById("btn-mail1");
       btn.disabled = true;
       btn.classList.add("opacity-60");
-      showToast(
-        selectedIds.length > 0
-          ? `Sending Mail 1 (Thank You for Applying) to ${selectedIds.length} checked candidate(s)...`
-          : `Sending Mail 1 (Thank You for Applying) to all pending candidates in "${STATE.currentRole}"...`
-      );
+      showToast("Sending Thank You emails via nuneslead@gmail.com...");
       try {
         const payload = selectedIds.length > 0
           ? { candidate_ids: selectedIds, force_resend: true, live_smtp: true }
@@ -765,7 +648,7 @@
     async function sendInterviewMailToSelected() {
       const selectedIds = STATE.candidates.filter(c => c.selected_by_recruiter).map(c => c.id);
       if (selectedIds.length === 0) {
-        showToast("Please select one or more candidates using the checkboxes (☑) first!", "error");
+        showToast("Please select at least one candidate using the checkboxes.", "error");
         return;
       }
       await sendInterviewMail(selectedIds);
@@ -776,7 +659,7 @@
       btn.disabled = true;
       btn.classList.add("opacity-60");
       const sched = STATE.overview?.interview_schedule;
-      showToast(`Sending 2nd Mail (Interview Invite for ${sched?.interview_label || "11:00 AM"}) to ${candidateIds.length} selected candidate(s)...`);
+      showToast(`Sending Interview Invitation (${sched?.interview_label || "11:00 AM"}) via nuneslead@gmail.com...`);
       try {
         const res = await fetch("/api/mail/send-interview", {
           method: "POST",
@@ -790,13 +673,13 @@
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast(data.detail || "Failed to send interview invitations", "error");
+          showToast(data.detail || "Failed to send invitations", "error");
         } else {
           showToast(data.message);
           await loadDashboard();
         }
       } catch (e) {
-        showToast("Failed to send interview invitations: " + e.message, "error");
+        showToast("Failed to send invitations: " + e.message, "error");
       } finally {
         btn.disabled = false;
         btn.classList.remove("opacity-60");
@@ -807,8 +690,8 @@
       const btn = document.getElementById("btn-rank");
       btn.disabled = true;
       const origText = btn.innerHTML;
-      btn.innerHTML = `<span class="animate-spin">⏳</span> <span>Ranking 100% of Candidates with OpenAI...</span>`;
-      showToast(`Running OpenAI (gpt-4o-mini) ranking for all candidates in "${STATE.currentRole}"...`);
+      btn.innerHTML = `<span>Ranking...</span>`;
+      showToast(`Ranking candidates for "${STATE.currentRole}"...`);
       try {
         const res = await fetch("/api/rank", {
           method: "POST",
@@ -818,11 +701,11 @@
         const data = await res.json();
         if (data.ok && data.results && data.results[0]) {
           const r = data.results[0];
-          showToast(`OpenAI Ranking Complete! Ranked ${r.ranked}/${r.total} candidates (0 Missing, ${r.shortlisted} Shortlisted).`);
+          showToast(`Ranked all ${r.ranked} candidates (${r.shortlisted} Shortlisted).`);
           await loadDashboard();
         }
       } catch (e) {
-        showToast("OpenAI ranking error: " + e.message, "error");
+        showToast("Ranking error: " + e.message, "error");
       } finally {
         btn.disabled = false;
         btn.innerHTML = origText;
@@ -832,7 +715,7 @@
     async function syncFromIndeed() {
       const btn = document.getElementById("btn-sync");
       btn.disabled = true;
-      showToast("Syncing latest roles & candidate applications from Indeed Employer account...");
+      showToast("Syncing latest applications from nuneslead@gmail.com...");
       try {
         const res = await fetch("/api/sync-indeed", { method: "POST" });
         const data = await res.json();
@@ -852,45 +735,44 @@
     function openCandidateModal(id) {
       const c = STATE.candidates.find(x => x.id === id);
       if (!c) return;
-      document.getElementById("modal-cand-name").textContent = `#${c.rank_position} — ${c.name} (Score: ${c.ai_score}%)`;
-      document.getElementById("modal-cand-role").textContent = `${c.job_title} • ${c.location}`;
+      document.getElementById("modal-cand-name").textContent = `#${c.rank_position} — ${c.name} (${Math.round(c.ai_score)}% Match)`;
+      document.getElementById("modal-cand-role").textContent = `${c.job_title} • ${c.location || "Coimbatore"}`;
       document.getElementById("modal-cand-body").innerHTML = `
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 p-4 rounded-xl border border-slate-800">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
           <div>
-            <div class="text-slate-400 text-[11px]">Email Address</div>
-            <div class="font-mono font-bold text-white mt-0.5 break-all">${c.email}</div>
+            <div class="text-slate-500 text-[11px]">Email Address</div>
+            <div class="font-semibold text-slate-900 mt-0.5 break-all">${c.email}</div>
           </div>
           <div>
-            <div class="text-slate-400 text-[11px]">Phone Number</div>
-            <div class="font-mono font-bold text-white mt-0.5">${c.phone}</div>
+            <div class="text-slate-500 text-[11px]">Phone Number</div>
+            <div class="font-semibold text-slate-900 mt-0.5">${c.phone || "—"}</div>
           </div>
           <div>
-            <div class="text-slate-400 text-[11px]">OpenAI Recommendation</div>
-            <div class="font-bold text-emerald-400 mt-0.5">${c.recommendation} (${c.ai_score}/100)</div>
+            <div class="text-slate-500 text-[11px]">Status</div>
+            <div class="font-bold text-emerald-700 mt-0.5">${c.recommendation} (${Math.round(c.ai_score)}%)</div>
           </div>
         </div>
 
-        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
-          <div class="font-bold text-indigo-400 uppercase tracking-wider text-[11px]">OpenAI Job Description Evaluation</div>
-          <div><strong>Summary:</strong> ${c.experience_summary}</div>
-          <div><strong>Strengths:</strong> ${c.ai_strengths}</div>
-          <div><strong>Interview Focus / Gaps:</strong> ${c.ai_gaps}</div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+          <div class="font-bold text-slate-800 text-xs">Evaluation Summary</div>
+          <div class="text-slate-600"><strong>Experience:</strong> ${c.experience_summary}</div>
+          <div class="text-slate-600"><strong>Strengths:</strong> ${c.ai_strengths}</div>
           <div class="pt-1 flex flex-wrap gap-1.5">
-            ${(c.matched_skills || []).map(s => `<span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${s}</span>`).join("")}
+            ${(c.matched_skills || []).map(s => `<span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#2557a7] border border-blue-200 text-[11px] font-medium">${s}</span>`).join("")}
           </div>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-          <div class="font-bold text-slate-300 uppercase tracking-wider text-[11px] mb-2">Extracted Resume & Application Text</div>
-          <pre class="whitespace-pre-wrap font-mono text-[11px] text-slate-300 leading-relaxed max-h-72 overflow-y-auto custom-scroll">${c.resume_text || "No resume text"}</pre>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="font-bold text-slate-700 text-xs mb-2">Applicant Resume / Profile Details</div>
+          <pre class="whitespace-pre-wrap font-sans text-xs text-slate-700 leading-relaxed max-h-64 overflow-y-auto custom-scroll">${c.resume_text || "No resume text available."}</pre>
         </div>
 
-        <div class="flex items-center justify-end gap-3 pt-2">
-          <button onclick="sendSingleThankYou(${c.id}, true); closeCandidateModal();" class="px-4 py-2 rounded-lg font-bold bg-amber-500 text-slate-950">
-            📨 Send 1st Mail (Thank You)
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button onclick="sendSingleThankYou(${c.id}, true); closeCandidateModal();" class="px-4 py-2 rounded-lg font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200">
+            Send Thank You Email
           </button>
-          <button onclick="sendSingleInterview(${c.id}); closeCandidateModal();" class="px-4 py-2 rounded-lg font-bold bg-emerald-500 text-slate-950">
-            📅 Send 2nd Mail (Interview @ 11:00 AM)
+          <button onclick="sendSingleInterview(${c.id}); closeCandidateModal();" class="px-4 py-2 rounded-lg font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white">
+            Send Interview Invite (11:00 AM)
           </button>
         </div>
       `;
@@ -917,7 +799,7 @@
       const desc = document.getElementById("jd-textarea").value;
       const btn = document.getElementById("btn-save-jd");
       btn.disabled = true;
-      btn.textContent = "Saving & Ranking with OpenAI...";
+      btn.textContent = "Saving & Ranking...";
       try {
         const res = await fetch("/api/roles/update", {
           method: "POST",
@@ -932,32 +814,32 @@
         showToast("Error updating JD: " + e.message, "error");
       } finally {
         btn.disabled = false;
-        btn.textContent = "Save JD & Re-Rank All Candidates with OpenAI";
+        btn.textContent = "Save & Re-Rank Candidates";
       }
     }
 
     function openEmailLogsModal() {
       const body = document.getElementById("logs-modal-body");
       if (!STATE.emailLogs || STATE.emailLogs.length === 0) {
-        body.innerHTML = `<div class="py-8 text-center text-slate-400">No emails sent in this session yet. Click "Send 1st Mail" or "Send 2nd Mail" to dispatch live emails.</div>`;
+        body.innerHTML = `<div class="py-8 text-center text-slate-400">No emails sent in this session yet.</div>`;
       } else {
         body.innerHTML = STATE.emailLogs.map(l => `
-          <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 flex flex-col gap-1.5">
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col gap-1.5">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
                   l.mail_type === "MAIL_2_INTERVIEW_INVITE"
-                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                    : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                }">${l.mail_type}</span>
-                <span class="font-bold text-white">${l.candidate_name}</span>
-                <span class="font-mono text-slate-400">&lt;${l.recipient_email}&gt;</span>
+                    ? "bg-blue-50 text-[#2557a7] border border-blue-200"
+                    : "bg-amber-50 text-amber-800 border border-amber-200"
+                }">${l.mail_type === "MAIL_2_INTERVIEW_INVITE" ? "Interview Invite" : "Thank You"}</span>
+                <span class="font-bold text-slate-900">${l.candidate_name}</span>
+                <span class="text-slate-500">&lt;${l.recipient_email}&gt;</span>
               </div>
-              <span class="text-[11px] text-slate-400 font-mono">${l.sent_at}</span>
+              <span class="text-[11px] text-slate-400">${l.sent_at}</span>
             </div>
-            <div class="text-indigo-300 font-semibold">${l.subject}</div>
-            <div class="text-[11px] text-slate-400">Schedule: <strong class="text-emerald-400">${l.interview_schedule || "N/A"}</strong></div>
-            <pre class="whitespace-pre-wrap font-mono text-[11px] text-slate-300 bg-slate-950 p-2.5 rounded border border-slate-800/80 mt-1">${l.body}</pre>
+            <div class="text-slate-800 font-semibold">${l.subject}</div>
+            <div class="text-[11px] text-slate-500">From: <strong>nuneslead@gmail.com</strong> • Schedule: <strong class="text-emerald-700">${l.interview_schedule || "Standard"}</strong></div>
+            <pre class="whitespace-pre-wrap font-sans text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200 mt-1">${l.body}</pre>
           </div>
         `).join("");
       }
