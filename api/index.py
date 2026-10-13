@@ -371,6 +371,27 @@ def build_interview_email(candidate_name: str, job_title: str, schedule: Dict[st
     return {"subject": subject, "body": body}
 
 
+def build_regret_email(candidate_name: str, job_title: str) -> Dict[str, str]:
+    company_name = get_setting("company_name", DEFAULT_COMPANY_NAME)
+    subject = f"Application Update: {job_title} – {company_name}"
+    body = (
+        f"Dear {candidate_name},\n\n"
+        f"Thank you very much for your interest in the {job_title} position at {company_name}, and for taking the time to apply with us.\n\n"
+        f"We have carefully reviewed your application. While your background and efforts are commendable, after thoughtful "
+        f"consideration we have decided to move forward with other applicants whose specific skill set more closely aligns with the "
+        f"immediate requirements of this role.\n\n"
+        f"We have safely retained your resume in our talent database. Should another opening open up that matches your profile, "
+        f"our recruitment team will be pleased to contact you.\n\n"
+        f"We sincerely thank you for your time and wish you the very best in your career pursuits.\n\n"
+        f"Warm regards,\n"
+        f"HR & Talent Acquisition Team\n"
+        f"{company_name}\n"
+        f"Rathinapuri, Coimbatore, Tamil Nadu\n"
+        f"Contact: +91 93617 73377"
+    )
+    return {"subject": subject, "body": body}
+
+
 # ============================================================================
 # OPENAI RANKING ENGINE (STRICT 100% COVERAGE - ZERO MISSING CANDIDATES)
 # ============================================================================
@@ -873,6 +894,83 @@ def api_send_interview(req: SendInterviewRequest):
             f"Mail 2 (Interview Invitation) sent to {sent_count} selected candidate(s) for "
             f"{schedule['interview_day']}, {schedule['interview_date']} at 11:00 AM!"
         )
+    }
+
+
+class SendRegretRequest(BaseModel):
+    candidate_ids: Optional[List[int]] = None
+    job_title: Optional[str] = None
+    live_smtp: bool = True
+
+
+@app.post("/api/mail/send-regret")
+def api_send_regret(req: SendRegretRequest):
+    with get_db() as conn:
+        if req.candidate_ids is not None:
+            if not req.candidate_ids:
+                return {"ok": True, "mail_type": "MAIL_REGRET", "targeted": 0, "sent_count": 0, "message": "No candidates specified."}
+            placeholders = ",".join("?" for _ in req.candidate_ids)
+            query = f"SELECT * FROM candidates WHERE id IN ({placeholders}) AND hiring_stage != 'REJECTED'"
+            targets = [dict(r) for r in conn.execute(query, req.candidate_ids).fetchall()]
+        elif req.job_title and req.job_title != "ALL":
+            query = "SELECT * FROM candidates WHERE job_title=? AND (recommendation='Review' OR ai_score < 60) AND hiring_stage != 'REJECTED'"
+            targets = [dict(r) for r in conn.execute(query, (req.job_title,)).fetchall()]
+        else:
+            query = "SELECT * FROM candidates WHERE (recommendation='Review' OR ai_score < 60) AND hiring_stage != 'REJECTED'"
+            targets = [dict(r) for r in conn.execute(query).fetchall()]
+
+    if not targets:
+        return {
+            "ok": True,
+            "mail_type": "MAIL_REGRET",
+            "targeted": 0,
+            "sent_count": 0,
+            "message": "All candidates in this selection have already received regret notifications. Duplicate email blocked."
+        }
+
+    sent_count = 0
+    errors = []
+    now_str = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M:%S IST")
+
+    for idx, cand in enumerate(targets):
+        cname = cand["name"].strip()
+        if len(cname) < 3 or any(b in cname.lower() for b in ["file", "executive", "driver", "download", "resume"]):
+            continue
+
+        mail_content = build_regret_email(cname, cand["job_title"])
+        recipient = cand.get("direct_email") or cand.get("email") or cand.get("indeed_email")
+        smtp_ok = True
+        err_msg = None
+
+        if req.live_smtp and idx < 8 and recipient:
+            res = send_smtp_email(recipient, mail_content["subject"], mail_content["body"])
+            smtp_ok = res["ok"]
+            err_msg = res.get("error")
+
+        if smtp_ok:
+            sent_count += 1
+            with get_db() as conn:
+                conn.execute(
+                    "UPDATE candidates SET hiring_stage='REJECTED' WHERE id=?",
+                    (cand["id"],)
+                )
+                conn.execute("""
+                    INSERT INTO email_logs (candidate_id, candidate_name, recipient_email, job_title, mail_type, subject, body, status, interview_schedule, sent_at)
+                    VALUES (?, ?, ?, ?, 'MAIL_REGRET', ?, ?, 'SENT', 'Polite Regret / Not Shortlisted', ?)
+                """, (
+                    cand["id"], cname, recipient, cand["job_title"],
+                    mail_content["subject"], mail_content["body"], now_str
+                ))
+        else:
+            errors.append({"candidate": cname, "error": err_msg})
+
+    return {
+        "ok": True,
+        "mail_type": "MAIL_REGRET",
+        "targeted": len(targets),
+        "sent_count": sent_count,
+        "errors": errors,
+        "message": f"Polite Regret email dispatched to {sent_count} candidate(s)."
     }
 
 
