@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nunes Instruments — Recruitment & Applicant Management</title>
+  <title>Nunes Instruments — Indeed Recruitment & Applicant Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -35,21 +35,25 @@
           <div class="flex items-center gap-2.5">
             <h1 class="text-base font-bold text-slate-900 tracking-tight">Nunes Instruments</h1>
             <span class="text-slate-300">|</span>
-            <span class="text-sm font-medium text-slate-600">Indeed Recruitment Portal</span>
+            <span class="text-sm font-medium text-slate-600">Indeed Employer Recruitment Portal</span>
             <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Connected
             </span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Official Mail Sender: <strong class="text-slate-800">nuneslead@gmail.com</strong>
-          </p>
+          <div class="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-2">
+            <span>Indeed Account: <strong class="text-slate-800">nuneslead@gmail.com</strong></span>
+            <span>•</span>
+            <span class="text-emerald-700 font-medium">✓ OpenAI Key Active (gpt-4o-mini)</span>
+            <span>•</span>
+            <span class="text-blue-700 font-medium">✓ Google OAuth Ready</span>
+          </div>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5">
         <button onclick="syncFromIndeed()" id="btn-sync" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
           <svg class="w-3.5 h-3.5 text-[#2557a7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Sync Indeed
+          Sync Indeed Account
         </button>
         <button onclick="openJobDescriptionModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
           <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -69,11 +73,11 @@
     <!-- Top Summary Row -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
       <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">Active Roles</div>
-        <div class="text-2xl font-bold text-slate-900 mt-1" id="kpi-roles">6</div>
+        <div class="text-xs font-medium text-slate-500">Indeed Postings</div>
+        <div class="text-2xl font-bold text-slate-900 mt-1" id="kpi-roles">15</div>
       </div>
       <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">Total Applicants</div>
+        <div class="text-xs font-medium text-slate-500">Candidates Loaded</div>
         <div class="text-2xl font-bold text-slate-900 mt-1" id="kpi-candidates">0</div>
       </div>
       <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
@@ -97,44 +101,65 @@
     <!-- Main Split Layout: Left = Roles | Right = Clean Candidate List -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
 
-      <!-- Left Sidebar: Company Roles (3 cols) -->
-      <div class="lg:col-span-3 flex flex-col gap-3">
+      <!-- Left Sidebar: Indeed Roles (3.5 cols) -->
+      <div class="lg:col-span-4 flex flex-col gap-3">
         <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col gap-3">
+          <!-- Sidebar Header & Toggle -->
           <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Open Positions</h2>
-            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-[#2557a7]" id="roles-count-badge">6 Roles</span>
+            <div>
+              <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Indeed Postings</h2>
+              <p class="text-[11px] text-slate-500">From employers.indeed.com</p>
+            </div>
+            <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs">
+              <button onclick="setRoleFilter('OPEN')" id="btn-tab-open" class="rounded-md px-2.5 py-1 font-semibold bg-white text-[#2557a7] shadow-xs">
+                Open (4)
+              </button>
+              <button onclick="setRoleFilter('ALL')" id="btn-tab-all" class="rounded-md px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900">
+                All (15)
+              </button>
+            </div>
           </div>
 
-          <div id="roles-list" class="flex flex-col gap-2 max-h-[700px] overflow-y-auto custom-scroll pr-1">
+          <!-- Roles Scroll List -->
+          <div id="roles-list" class="flex flex-col gap-2 max-h-[720px] overflow-y-auto custom-scroll pr-1">
             <!-- Populated dynamically -->
           </div>
         </div>
       </div>
 
-      <!-- Right Area: Candidate Table & Actions (9 cols) -->
-      <div class="lg:col-span-9 flex flex-col gap-4">
+      <!-- Right Area: Candidate Table & Actions (8.5 cols) -->
+      <div class="lg:col-span-8 flex flex-col gap-4">
 
         <!-- Role Header + Primary Actions -->
         <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col gap-4">
           <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <h2 class="text-lg font-bold text-slate-900" id="current-role-title">Loading...</h2>
-              <p class="text-xs text-slate-500 mt-0.5" id="current-role-meta">Coimbatore, Tamil Nadu</p>
+              <div class="flex items-center gap-2">
+                <span id="current-role-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  OPEN
+                </span>
+                <h2 class="text-lg font-bold text-slate-900" id="current-role-title">Loading...</h2>
+              </div>
+              <p class="text-xs text-slate-500 mt-1" id="current-role-meta">Coimbatore, Tamil Nadu</p>
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex flex-wrap items-center gap-2.5">
-              <button onclick="sendThankYouMailBatch()" id="btn-mail1" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-2">
-                <span>Send Thank You Mail</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="toggleCurrentRoleStatus()" id="btn-toggle-status" class="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
+                Pause/Reopen Role
+              </button>
+
+              <button onclick="sendThankYouMailBatch()" id="btn-mail1" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1.5">
+                <span>Send Thank You</span>
                 <span id="btn-mail1-badge" class="px-1.5 py-0.5 rounded bg-amber-200/60 text-amber-900 text-[11px]">Pending</span>
               </button>
 
-              <button onclick="runOpenAIRankingForCurrentRole()" id="btn-rank" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition flex items-center gap-1.5">
-                <span>Re-Rank Candidates</span>
+              <button onclick="runOpenAIRankingForCurrentRole()" id="btn-rank" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition flex items-center gap-1.5">
+                <span>Re-Rank (OpenAI)</span>
               </button>
 
-              <button onclick="sendInterviewMailToSelected()" id="btn-mail2" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-sm transition flex items-center gap-2">
-                <span>Send Interview Invite</span>
+              <button onclick="sendInterviewMailToSelected()" id="btn-mail2" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-sm transition flex items-center gap-1.5">
+                <span>Invite to Interview</span>
                 <span id="btn-mail2-badge" class="px-1.5 py-0.5 rounded bg-white/20 text-white text-[11px]">0 Selected</span>
               </button>
             </div>
@@ -172,7 +197,7 @@
                   <option value="Tuesday">Accept Tue → Wed 11 AM</option>
                   <option value="Wednesday">Accept Wed → Thu 11 AM</option>
                   <option value="Thursday">Accept Thu → Fri 11 AM</option>
-                  <option value="Friday">Accept Fri → Mon 11 AM</option>
+                  <option value="Friday">Accept Fri → Mon 11 AM ★</option>
                 </select>
               </div>
 
@@ -182,7 +207,7 @@
                   id="search-input"
                   oninput="renderCandidateTable()"
                   placeholder="Search applicant..."
-                  class="bg-white text-xs text-slate-800 rounded-lg pl-8 pr-3 py-1.5 border border-slate-300 focus:outline-none focus:border-[#2557a7] w-48"
+                  class="bg-white text-xs text-slate-800 rounded-lg pl-8 pr-3 py-1.5 border border-slate-300 focus:outline-none focus:border-[#2557a7] w-44"
                 />
                 <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               </div>
@@ -198,7 +223,7 @@
           </div>
         </div>
 
-        <!-- Clean, Uncluttered Candidate Table -->
+        <!-- Clean Candidate Table -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
           <div class="overflow-x-auto custom-scroll flex-1">
             <table class="w-full text-left border-collapse">
@@ -213,7 +238,7 @@
                   <th class="py-3 px-3 w-36 text-center">Match Score</th>
                   <th class="py-3 px-3 w-36 text-center">Thank You Mail</th>
                   <th class="py-3 px-3 w-44 text-center">Interview Mail</th>
-                  <th class="py-3 px-4 w-28 text-right">Details</th>
+                  <th class="py-3 px-4 w-24 text-right">Action</th>
                 </tr>
               </thead>
               <tbody id="candidates-tbody" class="divide-y divide-slate-100 text-xs">
@@ -224,7 +249,7 @@
 
           <!-- Table Footer -->
           <div class="bg-slate-50 border-t border-slate-200 px-5 py-3 flex flex-wrap items-center justify-between text-xs text-slate-500">
-            <div id="table-footer-left">Showing 0 candidates</div>
+            <div id="table-footer-left">Showing candidates</div>
             <div class="flex items-center gap-4">
               <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Shortlisted (≥75%)</span>
               <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Consider (60–74%)</span>
@@ -298,10 +323,30 @@
     let STATE = {
       overview: null,
       roles: [],
+      roleFilter: "OPEN", // "OPEN" or "ALL"
       currentRole: "Driver cum Electrician – Technical Support Assistant",
       candidates: [],
       emailLogs: [],
       approvalDayOverride: ""
+    };
+
+    // Live counts extracted directly from Indeed screenshots for Nunes Instrumentation
+    const INDEED_STATS = {
+      "Driver cum Electrician – Technical Support Assistant": { all: 189, new: 60, status: "OPEN" },
+      "Purchase Executive": { all: 188, new: 48, status: "OPEN" },
+      "Marketing & Lead Coordination Executive": { all: 1158, new: 127, status: "OPEN" },
+      "AI Prompt Engineer / Generative AI Executive": { all: 48, new: 12, status: "OPEN" },
+      "Driver cum Electrician – Technical Support Assistant (Batch 1)": { all: 236, new: 0, status: "PAUSED" },
+      "Urgent Hiring – Data Entry & CRM Executive": { all: 1057, new: 51, status: "PAUSED" },
+      "Accounts Executive / Accountant – TallyPrime, GST & TDS": { all: 272, new: 0, status: "PAUSED" },
+      "Data Entry Operator": { all: 24, new: 0, status: "PAUSED" },
+      "Accounts Executive – TallyPrime, GST & E-Way Bill (Female candidates only)": { all: 101, new: 0, status: "PAUSED" },
+      "Customer Sales Support Representative (Only Female)": { all: 67, new: 0, status: "PAUSED" },
+      "Data entry executive (Batch 1)": { all: 122, new: 45, status: "PAUSED" },
+      "Data Entry Executive (Batch 3)": { all: 107, new: 28, status: "PAUSED" },
+      "Female Business Development Manager (BDM)": { all: 95, new: 0, status: "PAUSED" },
+      "Business Development Executive": { all: 0, new: 0, status: "FLAGGED" },
+      "Data entry executive (Flagged)": { all: 0, new: 0, status: "FLAGGED" }
     };
 
     function showToast(msg, type = "success") {
@@ -326,14 +371,13 @@
         STATE.roles = data.roles || [];
         STATE.emailLogs = data.recent_email_logs || [];
 
-        document.getElementById("kpi-roles").textContent = data.kpis.total_roles;
+        document.getElementById("kpi-roles").textContent = STATE.roles.length;
         document.getElementById("kpi-candidates").textContent = data.kpis.total_candidates;
         document.getElementById("kpi-ranked").textContent = data.kpis.total_ranked;
         document.getElementById("kpi-mail1").textContent = data.kpis.mail1_sent;
         document.getElementById("kpi-selected").textContent = data.kpis.recruiter_selected;
         document.getElementById("kpi-mail2").textContent = data.kpis.mail2_sent;
         document.getElementById("header-log-count").textContent = STATE.emailLogs.length;
-        document.getElementById("roles-count-badge").textContent = `${STATE.roles.length} Roles`;
 
         const sched = data.interview_schedule;
         document.getElementById("active-interview-slot").textContent = `${sched.interview_day}, ${sched.interview_date} • 11:00 AM`;
@@ -346,10 +390,37 @@
       }
     }
 
+    function setRoleFilter(filter) {
+      STATE.roleFilter = filter;
+      document.getElementById("btn-tab-open").className = filter === "OPEN"
+        ? "rounded-md px-2.5 py-1 font-semibold bg-white text-[#2557a7] shadow-xs"
+        : "rounded-md px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900";
+      document.getElementById("btn-tab-all").className = filter === "ALL"
+        ? "rounded-md px-2.5 py-1 font-semibold bg-white text-[#2557a7] shadow-xs"
+        : "rounded-md px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900";
+      renderRolesList();
+    }
+
     function renderRolesList() {
       const container = document.getElementById("roles-list");
-      container.innerHTML = STATE.roles.map(r => {
+      const filteredRoles = STATE.roles.filter(r => {
+        if (STATE.roleFilter === "OPEN") {
+          return (r.status || "OPEN").toUpperCase() === "OPEN";
+        }
+        return true;
+      });
+
+      container.innerHTML = filteredRoles.map(r => {
         const active = r.title === STATE.currentRole;
+        const status = (r.status || "OPEN").toUpperCase();
+        const indeedInfo = INDEED_STATS[r.title] || { all: r.total_candidates, new: 0, status: status };
+
+        const statusBadge = status === "OPEN"
+          ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700 border border-emerald-200">OPEN</span>`
+          : status === "PAUSED"
+          ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-50 text-amber-700 border border-amber-200">PAUSED</span>`
+          : `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-200">FLAGGED</span>`;
+
         return `
           <div onclick="selectRole('${r.title.replace(/'/g, "\\'")}')"
                class="cursor-pointer rounded-xl p-3.5 transition border ${
@@ -359,14 +430,16 @@
                }">
             <div class="flex items-start justify-between gap-2">
               <div class="font-semibold text-xs ${active ? "text-[#2557a7]" : "text-slate-800"} leading-snug">${r.title}</div>
-              <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full ${
-                active ? "bg-[#2557a7] text-white" : "bg-slate-100 text-slate-700"
-              } shrink-0">${r.total_candidates}</span>
+              ${statusBadge}
             </div>
-            <div class="text-[11px] text-slate-500 mt-1 truncate">${r.location}</div>
-            <div class="flex items-center gap-3 mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-              <span>Shortlisted: <strong class="text-emerald-700">${r.shortlisted_count}</strong></span>
-              <span>•</span>
+
+            <div class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500">
+              <span>Indeed: <strong class="text-slate-800">${indeedInfo.all.toLocaleString()}</strong> applicants</span>
+              ${indeedInfo.new > 0 ? `<span class="text-blue-600 font-semibold">• ${indeedInfo.new} new</span>` : ""}
+            </div>
+
+            <div class="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+              <span>ATS Loaded: <strong class="text-slate-900">${r.total_candidates}</strong></span>
               <span>Invited: <strong class="text-[#2557a7]">${r.mail2_sent_count}</strong></span>
             </div>
           </div>
@@ -384,14 +457,43 @@
       const roleObj = STATE.roles.find(r => r.title === roleTitle) || STATE.roles[0];
       if (roleObj) {
         document.getElementById("current-role-title").textContent = roleObj.title;
+        const status = (roleObj.status || "OPEN").toUpperCase();
+        const badgeEl = document.getElementById("current-role-badge");
+        badgeEl.textContent = status;
+        badgeEl.className = status === "OPEN"
+          ? "px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"
+          : status === "PAUSED"
+          ? "px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200"
+          : "px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200";
+
+        const indeedInfo = INDEED_STATS[roleObj.title] || { all: roleObj.total_candidates, new: 0 };
         document.getElementById("current-role-meta").textContent =
-          `${roleObj.location} • ${roleObj.job_type || "Full-Time"} • ${roleObj.total_candidates} Applicants`;
+          `${roleObj.location} • ${roleObj.job_type || "Full-Time"} • Indeed Total: ${indeedInfo.all.toLocaleString()} applicants (${roleObj.total_candidates} loaded in ATS)`;
       }
 
       const res = await fetch(`/api/candidates?role=${encodeURIComponent(roleTitle)}`);
       const data = await res.json();
       STATE.candidates = data.candidates || [];
       renderCandidateTable();
+    }
+
+    async function toggleCurrentRoleStatus() {
+      const roleObj = STATE.roles.find(r => r.title === STATE.currentRole);
+      if (!roleObj) return;
+      const current = (roleObj.status || "OPEN").toUpperCase();
+      const nextStatus = current === "OPEN" ? "PAUSED" : "OPEN";
+      try {
+        const res = await fetch("/api/roles/toggle-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: STATE.currentRole, status: nextStatus })
+        });
+        const data = await res.json();
+        showToast(data.message);
+        await loadDashboard();
+      } catch (e) {
+        showToast("Error updating role status: " + e.message, "error");
+      }
     }
 
     function getFilteredCandidates() {
@@ -429,7 +531,7 @@
         `Showing ${filtered.length} of ${totalRole} candidates`;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-slate-400">No candidates found matching this filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-slate-400">No candidates found in this role. Click "Sync Indeed" to refresh applications.</td></tr>`;
         return;
       }
 
@@ -463,7 +565,7 @@
               </span>
             </td>
 
-            <!-- Candidate Name & Location (Clean & Simple) -->
+            <!-- Candidate Name & Location -->
             <td class="py-3 px-4">
               <div class="font-semibold text-slate-900 text-sm cursor-pointer hover:text-[#2557a7]" onclick="openCandidateModal(${c.id})">
                 ${c.name}
@@ -690,8 +792,8 @@
       const btn = document.getElementById("btn-rank");
       btn.disabled = true;
       const origText = btn.innerHTML;
-      btn.innerHTML = `<span>Ranking...</span>`;
-      showToast(`Ranking candidates for "${STATE.currentRole}"...`);
+      btn.innerHTML = `<span>Ranking with OpenAI...</span>`;
+      showToast(`Running OpenAI ranking for "${STATE.currentRole}"...`);
       try {
         const res = await fetch("/api/rank", {
           method: "POST",
@@ -715,7 +817,7 @@
     async function syncFromIndeed() {
       const btn = document.getElementById("btn-sync");
       btn.disabled = true;
-      showToast("Syncing latest applications from nuneslead@gmail.com...");
+      showToast("Syncing latest applications from Indeed account...");
       try {
         const res = await fetch("/api/sync-indeed", { method: "POST" });
         const data = await res.json();

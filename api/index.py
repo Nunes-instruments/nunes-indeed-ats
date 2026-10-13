@@ -48,9 +48,8 @@ if ENV_FILE.exists():
 DEFAULT_COMPANY_NAME = os.environ.get("COMPANY_NAME", "Nunes Instrumentation")
 DEFAULT_SMTP_EMAIL = os.environ.get("SMTP_EMAIL", "nuneslead@gmail.com")
 DEFAULT_SMTP_PASS = os.environ.get("SMTP_APP_PASSWORD", "zmfrmwrvwpsinhjc")
-_ENC_KEY = "c2stcHJvai1WWE5IeGVzX21lUmZ6aFlkalAtWWhCNGF4U0xXSmlJaXdTTllLbTZTa3htY3V0Q0lsUjJBbG0telRuVXkyYjF2WFFfTkhrmXhINzNCMGJrRkppVmlCRno4eTF0R2M1ZzN3YlF0MnlpVUdBaXoweEVvM1JOd1dzOVMwemZTejRCaFF3TDZfYVRCQXU5QV9QcVVYZFhoYXZ0c2I0QQ=="
 DEFAULT_OPENAI_KEY = os.environ.get("OPENAI_API_KEY") or base64.b64decode(
-    "c2stcHJvai1WWE5IeGVzX21lUmZ6aFlkalAtWWhCNGF4U0xXSmlJaXdTTllLbTZTa3htY3V0Q0lsUjJBbG0telRuVXkyYjF2WFFfTkhrZnhoNVQzQmxia0ZKaVZpQkZ6OHkxdEdjNWczd2JRdDJ5aVVHQWl6MHhFbzNSTndXczlTMHpmU3o0QmhRd0w2X2FUQkF1OUFfUHFVWGRYaGF2dHNiNEE="
+    "c2stcHJvai1Ua2FkcHp0RTRTM29EVmJxTmY4RlMxcXdwdEp3dlZjNGpRNEJTV3hTb3FLc1hXam00WlhTQjJCTWx4cnYwTG1HcXVqbS1faGVOWVQzQmxia0ZKTk5iejEyTldnY3BsTGxrZkZnN2FFQ05wM0N3Yk4yRTFNQTlTOFBvcmtlMV9md2NuZ1ZCNk8xYjMwOC1MUkRQdDFrWlNsYnNfSUE="
 ).decode("utf-8")
 DEFAULT_OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
@@ -214,17 +213,17 @@ def init_db():
             );
         """)
 
-        # Seed from seed_data.json if roles or candidates table is empty
+        # Seed from seed_data.json if roles < 15 or candidates table is empty
         role_count = conn.execute("SELECT COUNT(*) FROM roles").fetchone()[0]
         cand_count = conn.execute("SELECT COUNT(*) FROM candidates").fetchone()[0]
 
-        if (role_count == 0 or cand_count == 0) and SEED_FILE.exists():
+        if (role_count < 15 or cand_count == 0) and SEED_FILE.exists():
             try:
                 seed = json.loads(SEED_FILE.read_text(encoding="utf-8"))
                 now_str = datetime.now(timezone.utc).isoformat()
                 for r in seed.get("roles", []):
                     conn.execute("""
-                        INSERT OR IGNORE INTO roles (id, title, location, department, job_type, salary, status, indeed_url, description, updated_at)
+                        INSERT OR REPLACE INTO roles (id, title, location, department, job_type, salary, status, indeed_url, description, updated_at)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         r["id"], r["title"], r.get("location", ""), r.get("department", ""),
@@ -616,6 +615,18 @@ def api_update_role(req: RoleUpdateRequest):
         """, (req.description, req.location, req.salary, datetime.now(timezone.utc).isoformat(), req.title))
     rank_res = run_openai_ranking_for_role(req.title)
     return {"ok": True, "message": f"Updated job description and re-ranked all candidates for {req.title}", "ranking": rank_res}
+
+
+class RoleStatusToggleRequest(BaseModel):
+    title: str
+    status: str  # 'OPEN', 'PAUSED', 'FLAGGED'
+
+@app.post("/api/roles/toggle-status")
+def api_toggle_role_status(req: RoleStatusToggleRequest):
+    with get_db() as conn:
+        conn.execute("UPDATE roles SET status=?, updated_at=? WHERE title=?",
+                     (req.status.upper(), datetime.now(timezone.utc).isoformat(), req.title))
+    return {"ok": True, "title": req.title, "status": req.status.upper(), "message": f"Updated {req.title} status to {req.status.upper()}"}
 
 
 class RankRequest(BaseModel):
