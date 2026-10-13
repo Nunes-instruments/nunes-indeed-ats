@@ -725,6 +725,26 @@ def api_update_candidate_stage(req: CandidateStageUpdateRequest):
     }
 
 
+class CandidateContactUpdateRequest(BaseModel):
+    candidate_id: int
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    direct_email: Optional[str] = None
+
+
+@app.post("/api/candidates/update-contact")
+def api_update_candidate_contact(req: CandidateContactUpdateRequest):
+    with get_db() as conn:
+        conn.execute("""
+            UPDATE candidates
+            SET phone=COALESCE(?, phone),
+                email=COALESCE(?, email),
+                direct_email=COALESCE(?, direct_email)
+            WHERE id=?
+        """, (req.phone, req.email or req.direct_email, req.direct_email or req.email, req.candidate_id))
+    return {"ok": True, "message": "Candidate contact details updated successfully"}
+
+
 class SendThankYouRequest(BaseModel):
     candidate_ids: Optional[List[int]] = None
     job_title: Optional[str] = None
