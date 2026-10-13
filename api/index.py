@@ -213,6 +213,16 @@ def init_db():
             );
         """)
 
+        # Column migrations
+        try:
+            conn.execute("ALTER TABLE candidates ADD COLUMN hiring_stage TEXT DEFAULT 'APPLIED'")
+        except Exception:
+            pass
+        try:
+            conn.execute("ALTER TABLE candidates ADD COLUMN recruiter_notes TEXT DEFAULT ''")
+        except Exception:
+            pass
+
         # Seed from seed_data.json if roles < 15 or candidates table is empty
         role_count = conn.execute("SELECT COUNT(*) FROM roles").fetchone()[0]
         cand_count = conn.execute("SELECT COUNT(*) FROM candidates").fetchone()[0]
@@ -590,6 +600,15 @@ def api_candidates(role: Optional[str] = None, search: Optional[str] = None, fil
         except Exception:
             r["matched_skills"] = ["Verified Profile"]
         r["selected_by_recruiter"] = bool(r.get("selected_by_recruiter"))
+        if not r.get("hiring_stage") or r.get("hiring_stage") == "APPLIED":
+            if r.get("mail2_status") == "SENT":
+                r["hiring_stage"] = "INTERVIEW_SCHEDULED"
+            elif r.get("mail1_status") == "SENT":
+                r["hiring_stage"] = "THANK_YOU_SENT"
+            elif r.get("recommendation") == "Shortlist":
+                r["hiring_stage"] = "SHORTLISTED"
+            else:
+                r["hiring_stage"] = "APPLIED"
 
     return {
         "ok": True,
@@ -664,6 +683,27 @@ def api_select_candidates(req: SelectionRequest):
     return {"ok": True, "updated": cur.rowcount, "selected": req.selected}
 
 
+class CandidateStageUpdateRequest(BaseModel):
+    candidate_id: int
+    stage: str  # 'APPLIED', 'THANK_YOU_SENT', 'INTERVIEW_SCHEDULED', 'ATTENDED', 'SELECTED_OFFERED', 'REJECTED', 'NO_SHOW'
+    notes: Optional[str] = None
+
+
+@app.post("/api/candidates/update-stage")
+def api_update_candidate_stage(req: CandidateStageUpdateRequest):
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE candidates SET hiring_stage=?, recruiter_notes=COALESCE(?, recruiter_notes) WHERE id=?",
+            (req.stage, req.notes, req.candidate_id)
+        )
+    return {
+        "ok": True,
+        "candidate_id": req.candidate_id,
+        "stage": req.stage,
+        "message": f"Candidate status updated to: {req.stage.replace('_', ' ').title()}"
+    }
+
+
 class SendThankYouRequest(BaseModel):
     candidate_ids: Optional[List[int]] = None
     job_title: Optional[str] = None
@@ -709,7 +749,7 @@ def api_send_thank_you(req: SendThankYouRequest):
             sent_count += 1
             with get_db() as conn:
                 conn.execute(
-                    "UPDATE candidates SET mail1_status='SENT', mail1_sent_at=? WHERE id=?",
+                    "UPDATE candidates SET mail1_status='SENT', mail1_sent_at=?, hiring_stage=CASE WHEN hiring_stage='APPLIED' THEN 'THANK_YOU_SENT' ELSE hiring_stage END WHERE id=?",
                     (now_str, cand["id"])
                 )
                 conn.execute("""
@@ -752,29 +792,33 @@ def api_send_interview(req: SendInterviewRequest):
             )
             targets = [
                 dict(r) for r in conn.execute(
-                    f"SELECT * FROM candidates WHERE id IN ({placeholders}) ORDER BY rank_position ASC",
+                    f"SELECT * FROM candidates WHERE id IN ({placeholders}) AND mail2_status != 'SENT' ORDER BY rank_position ASC",
                     req.candidate_ids
                 ).fetchall()
             ]
         elif req.job_title and req.job_title != "ALL":
             targets = [
                 dict(r) for r in conn.execute(
-                    "SELECT * FROM candidates WHERE job_title=? AND selected_by_recruiter=1 ORDER BY rank_position ASC",
+                    "SELECT * FROM candidates WHERE job_title=? AND selected_by_recruiter=1 AND mail2_status != 'SENT' ORDER BY rank_position ASC",
                     (req.job_title,)
                 ).fetchall()
             ]
         else:
             targets = [
                 dict(r) for r in conn.execute(
-                    "SELECT * FROM candidates WHERE selected_by_recruiter=1 ORDER BY rank_position ASC"
+                    "SELECT * FROM candidates WHERE selected_by_recruiter=1 AND mail2_status != 'SENT' ORDER BY rank_position ASC"
                 ).fetchall()
             ]
 
     if not targets:
-        raise HTTPException(
-            status_code=400,
-            detail="No candidates selected! Please select one or more candidates using the checkboxes first."
-        )
+        return {
+            "ok": True,
+            "mail_type": "MAIL_2_INTERVIEW_INVITE",
+            "targeted": 0,
+            "sent_count": 0,
+            "interview_schedule": schedule,
+            "message": "Selected candidate(s) have already received their Interview Invitation. Duplicate email blocked."
+        }
 
     sent_count = 0
     errors = []
@@ -798,6 +842,7 @@ def api_send_interview(req: SendInterviewRequest):
                     UPDATE candidates
                     SET selected_by_recruiter=1,
                         mail2_status='SENT',
+                        hiring_stage='INTERVIEW_SCHEDULED',
                         mail2_sent_at=?,
                         interview_day=?,
                         interview_date=?,

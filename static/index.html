@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nunes Instruments — Indeed Recruitment & Applicant Management</title>
+  <title>Nunes Instruments — Indeed Employer ATS & Candidate Suite</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -12,54 +12,59 @@
       background-color: #f8fafc;
       color: #0f172a;
     }
-    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     input[type="checkbox"] { accent-color: #2557a7; cursor: pointer; }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-resume, #printable-resume * { visibility: visible; }
+      #printable-resume { position: absolute; left: 0; top: 0; width: 100%; }
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col antialiased">
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-md rounded-xl p-4 shadow-lg border transition-all duration-300"></div>
+  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden max-w-md rounded-xl p-3.5 shadow-xl border transition-all duration-300 text-xs font-semibold"></div>
 
-  <!-- Top Navigation Bar (White Enterprise Header) -->
-  <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-3.5 shadow-sm">
-    <div class="max-w-[1560px] mx-auto flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-lg bg-[#2557a7] flex items-center justify-center font-bold text-lg text-white shadow-sm">
+  <!-- Top Enterprise Navbar (Fits 100% cleanly) -->
+  <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 lg:px-6 py-2.5 shadow-xs">
+    <div class="w-full flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-[#2557a7] flex items-center justify-center font-bold text-base text-white shadow-xs shrink-0">
           NI
         </div>
         <div>
-          <div class="flex items-center gap-2.5">
-            <h1 class="text-base font-bold text-slate-900 tracking-tight">Nunes Instruments</h1>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-slate-900 tracking-tight">Nunes Instruments</h1>
             <span class="text-slate-300">|</span>
-            <span class="text-sm font-medium text-slate-600">Indeed Employer Recruitment Portal</span>
-            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <span class="text-xs font-medium text-slate-600">Indeed Employer ATS</span>
+            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Connected
             </span>
           </div>
-          <div class="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-2">
+          <div class="text-[11px] text-slate-500 flex flex-wrap items-center gap-2">
             <span>Indeed Account: <strong class="text-slate-800">nuneslead@gmail.com</strong></span>
             <span>•</span>
-            <span class="text-emerald-700 font-medium">✓ OpenAI Key Active (gpt-4o-mini)</span>
+            <span class="text-emerald-700 font-medium">✓ OpenAI Active (gpt-4o-mini)</span>
             <span>•</span>
             <span class="text-blue-700 font-medium">✓ Google OAuth Ready</span>
           </div>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2.5">
-        <button onclick="syncFromIndeed()" id="btn-sync" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
+      <div class="flex items-center gap-2">
+        <button onclick="syncFromIndeed()" id="btn-sync" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-xs">
           <svg class="w-3.5 h-3.5 text-[#2557a7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Sync Indeed Account
+          Sync Indeed
         </button>
-        <button onclick="openJobDescriptionModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
+        <button onclick="openJobDescriptionModal()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-xs">
           <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           Job Description
         </button>
-        <button onclick="openEmailLogsModal()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm">
+        <button onclick="openEmailLogsModal()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-xs">
           <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           Sent Emails (<span id="header-log-count">0</span>)
         </button>
@@ -67,137 +72,153 @@
     </div>
   </header>
 
-  <!-- Main Workspace -->
-  <main class="max-w-[1560px] w-full mx-auto px-6 py-5 flex-1 flex flex-col gap-5">
+  <!-- Main Container (Fits page without horizontal cutoff) -->
+  <main class="w-full max-w-[1720px] mx-auto px-3 sm:px-5 py-3 flex-1 flex flex-col gap-3.5">
 
-    <!-- Top Summary Row -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">Indeed Postings</div>
-        <div class="text-2xl font-bold text-slate-900 mt-1" id="kpi-roles">15</div>
+    <!-- Compact KPI Metrics Ribbon -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+      <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-medium text-slate-500">Indeed Postings</div>
+          <div class="text-xl font-bold text-slate-900 leading-tight" id="kpi-roles">15</div>
+        </div>
+        <span class="text-lg">📋</span>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">Candidates Loaded</div>
-        <div class="text-2xl font-bold text-slate-900 mt-1" id="kpi-candidates">0</div>
+      <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-medium text-slate-500">Loaded in ATS</div>
+          <div class="text-xl font-bold text-slate-900 leading-tight" id="kpi-candidates">0</div>
+        </div>
+        <span class="text-lg">👥</span>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">AI Ranked</div>
-        <div class="text-2xl font-bold text-[#2557a7] mt-1" id="kpi-ranked">0</div>
+      <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-medium text-slate-500">AI Ranked</div>
+          <div class="text-xl font-bold text-[#2557a7] leading-tight" id="kpi-ranked">0</div>
+        </div>
+        <span class="text-lg">🤖</span>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">Thank You Sent</div>
-        <div class="text-2xl font-bold text-amber-600 mt-1" id="kpi-mail1">0</div>
+      <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-medium text-slate-500">Thank You Sent</div>
+          <div class="text-xl font-bold text-amber-600 leading-tight" id="kpi-mail1">0</div>
+        </div>
+        <span class="text-lg">✉️</span>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">Selected</div>
-        <div class="text-2xl font-bold text-indigo-600 mt-1" id="kpi-selected">0</div>
+      <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-medium text-slate-500">Selected by You</div>
+          <div class="text-xl font-bold text-indigo-600 leading-tight" id="kpi-selected">0</div>
+        </div>
+        <span class="text-lg">☑️</span>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-        <div class="text-xs font-medium text-slate-500">Interview Invited</div>
-        <div class="text-2xl font-bold text-emerald-600 mt-1" id="kpi-mail2">0</div>
+      <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <div class="text-[11px] font-medium text-slate-500">Interview Invited</div>
+          <div class="text-xl font-bold text-emerald-600 leading-tight" id="kpi-mail2">0</div>
+        </div>
+        <span class="text-lg">📅</span>
       </div>
     </div>
 
-    <!-- Main Split Layout: Left = Roles | Right = Clean Candidate List -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
+    <!-- Main Split Layout (3 cols sidebar, 9 cols table) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 flex-1">
 
-      <!-- Left Sidebar: Indeed Roles (3.5 cols) -->
-      <div class="lg:col-span-4 flex flex-col gap-3">
-        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col gap-3">
-          <!-- Sidebar Header & Toggle -->
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+      <!-- Left Sidebar: Indeed Roles (3 cols) -->
+      <div class="lg:col-span-3 flex flex-col gap-2.5">
+        <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-xs flex flex-col gap-2">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
             <div>
               <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Indeed Postings</h2>
-              <p class="text-[11px] text-slate-500">From employers.indeed.com</p>
+              <div class="text-[10px] text-slate-500">employers.indeed.com</div>
             </div>
             <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs">
-              <button onclick="setRoleFilter('OPEN')" id="btn-tab-open" class="rounded-md px-2.5 py-1 font-semibold bg-white text-[#2557a7] shadow-xs">
+              <button onclick="setRoleFilter('OPEN')" id="btn-tab-open" class="rounded-md px-2 py-0.5 text-[11px] font-semibold bg-white text-[#2557a7] shadow-xs">
                 Open (4)
               </button>
-              <button onclick="setRoleFilter('ALL')" id="btn-tab-all" class="rounded-md px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900">
+              <button onclick="setRoleFilter('ALL')" id="btn-tab-all" class="rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:text-slate-900">
                 All (15)
               </button>
             </div>
           </div>
 
-          <!-- Roles Scroll List -->
-          <div id="roles-list" class="flex flex-col gap-2 max-h-[720px] overflow-y-auto custom-scroll pr-1">
+          <div id="roles-list" class="flex flex-col gap-1.5 max-h-[680px] overflow-y-auto custom-scroll pr-1">
             <!-- Populated dynamically -->
           </div>
         </div>
       </div>
 
-      <!-- Right Area: Candidate Table & Actions (8.5 cols) -->
-      <div class="lg:col-span-8 flex flex-col gap-4">
+      <!-- Right Area: Candidates Table & Workflows (9 cols) -->
+      <div class="lg:col-span-9 flex flex-col gap-3">
 
-        <!-- Role Header + Primary Actions -->
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col gap-4">
-          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <!-- Role Header Card -->
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex flex-col gap-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <div class="flex items-center gap-2">
-                <span id="current-role-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span id="current-role-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   OPEN
                 </span>
-                <h2 class="text-lg font-bold text-slate-900" id="current-role-title">Loading...</h2>
+                <h2 class="text-base font-bold text-slate-900" id="current-role-title">Loading...</h2>
               </div>
-              <p class="text-xs text-slate-500 mt-1" id="current-role-meta">Coimbatore, Tamil Nadu</p>
+              <p class="text-xs text-slate-500 mt-0.5" id="current-role-meta">Coimbatore, Tamil Nadu</p>
             </div>
 
-            <!-- Action Buttons -->
+            <!-- Workflow Action Buttons -->
             <div class="flex flex-wrap items-center gap-2">
-              <button onclick="toggleCurrentRoleStatus()" id="btn-toggle-status" class="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
-                Pause/Reopen Role
+              <button onclick="toggleCurrentRoleStatus()" id="btn-toggle-status" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
+                Pause/Reopen
               </button>
 
-              <button onclick="sendThankYouMailBatch()" id="btn-mail1" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1.5">
+              <button onclick="sendThankYouMailBatch()" id="btn-mail1" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1.5">
                 <span>Send Thank You</span>
-                <span id="btn-mail1-badge" class="px-1.5 py-0.5 rounded bg-amber-200/60 text-amber-900 text-[11px]">Pending</span>
+                <span id="btn-mail1-badge" class="px-1.5 py-0.5 rounded bg-amber-200/60 text-amber-900 text-[10px]">Pending</span>
               </button>
 
-              <button onclick="runOpenAIRankingForCurrentRole()" id="btn-rank" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition flex items-center gap-1.5">
+              <button onclick="runOpenAIRankingForCurrentRole()" id="btn-rank" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition flex items-center gap-1.5">
                 <span>Re-Rank (OpenAI)</span>
               </button>
 
-              <button onclick="sendInterviewMailToSelected()" id="btn-mail2" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-sm transition flex items-center gap-1.5">
+              <button onclick="sendInterviewMailToSelected()" id="btn-mail2" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-xs transition flex items-center gap-1.5">
                 <span>Invite to Interview</span>
-                <span id="btn-mail2-badge" class="px-1.5 py-0.5 rounded bg-white/20 text-white text-[11px]">0 Selected</span>
+                <span id="btn-mail2-badge" class="px-1.5 py-0.5 rounded bg-white/20 text-white text-[10px]">0 Selected</span>
               </button>
             </div>
           </div>
 
-          <!-- Filter, Quick Select & Interview Schedule Bar -->
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <!-- Quick Selection Buttons -->
+          <!-- Quick Select, Interview Scheduling & Search Toolbar -->
+          <div class="flex flex-wrap items-center justify-between gap-2.5">
             <div class="flex flex-wrap items-center gap-1.5">
-              <button onclick="selectCandidatesByRule('ALL')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                Select All (<span id="count-all-role">0</span>)
+              <span class="text-xs text-slate-400 font-medium">Select:</span>
+              <button onclick="selectCandidatesByRule('ALL')" class="px-2 py-1 rounded text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                All (<span id="count-all-role">0</span>)
               </button>
-              <button onclick="selectCandidatesByRule('SHORTLIST')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition">
+              <button onclick="selectCandidatesByRule('SHORTLIST')" class="px-2 py-1 rounded text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition">
                 Shortlisted (<span id="count-shortlist-role">0</span>)
               </button>
-              <button onclick="selectCandidatesByRule('TOP5')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 hover:bg-blue-100 text-[#2557a7] border border-blue-200 transition">
+              <button onclick="selectCandidatesByRule('TOP5')" class="px-2 py-1 rounded text-xs font-medium bg-blue-50 hover:bg-blue-100 text-[#2557a7] border border-blue-200 transition">
                 Top 5
               </button>
-              <button onclick="selectCandidatesByRule('TOP10')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-50 hover:bg-blue-100 text-[#2557a7] border border-blue-200 transition">
+              <button onclick="selectCandidatesByRule('TOP10')" class="px-2 py-1 rounded text-xs font-medium bg-blue-50 hover:bg-blue-100 text-[#2557a7] border border-blue-200 transition">
                 Top 10
               </button>
-              <button onclick="selectCandidatesByRule('NONE')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition">
+              <button onclick="selectCandidatesByRule('NONE')" class="px-2 py-1 rounded text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition">
                 Clear
               </button>
             </div>
 
-            <!-- Interview Slot Selector & Search -->
-            <div class="flex flex-wrap items-center gap-2.5">
-              <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1">
-                <span class="text-[11px] text-slate-500">Interview Slot:</span>
-                <span class="text-xs font-semibold text-emerald-700" id="active-interview-slot">Tomorrow, 11:00 AM</span>
-                <select id="approval-day-select" onchange="onApprovalDayChange()" class="bg-white text-[11px] font-medium text-slate-700 rounded px-1.5 py-0.5 border border-slate-200 focus:outline-none">
-                  <option value="">Auto (Today)</option>
-                  <option value="Monday">Accept Mon → Tue 11 AM</option>
-                  <option value="Tuesday">Accept Tue → Wed 11 AM</option>
-                  <option value="Wednesday">Accept Wed → Thu 11 AM</option>
-                  <option value="Thursday">Accept Thu → Fri 11 AM</option>
-                  <option value="Friday">Accept Fri → Mon 11 AM ★</option>
+            <!-- Schedule Slot & Search Input -->
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs">
+                <span class="text-slate-500 text-[11px]">Slot:</span>
+                <span class="font-semibold text-emerald-700" id="active-interview-slot">Tomorrow, 11:00 AM</span>
+                <select id="approval-day-select" onchange="onApprovalDayChange()" class="bg-white text-[11px] font-medium text-slate-700 rounded px-1 py-0.5 border border-slate-200 focus:outline-none">
+                  <option value="">Today (Auto)</option>
+                  <option value="Monday">Mon → Tue 11 AM</option>
+                  <option value="Tuesday">Tue → Wed 11 AM</option>
+                  <option value="Wednesday">Wed → Thu 11 AM</option>
+                  <option value="Thursday">Thu → Fri 11 AM</option>
+                  <option value="Friday">Fri → Mon 11 AM ★</option>
                 </select>
               </div>
 
@@ -207,15 +228,18 @@
                   id="search-input"
                   oninput="renderCandidateTable()"
                   placeholder="Search applicant..."
-                  class="bg-white text-xs text-slate-800 rounded-lg pl-8 pr-3 py-1.5 border border-slate-300 focus:outline-none focus:border-[#2557a7] w-44"
+                  class="bg-white text-xs text-slate-800 rounded-lg pl-7 pr-2.5 py-1 border border-slate-300 focus:outline-none focus:border-[#2557a7] w-40"
                 />
-                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2 top-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               </div>
 
-              <select id="tier-filter" onchange="renderCandidateTable()" class="bg-white text-xs text-slate-700 rounded-lg px-2.5 py-1.5 border border-slate-300 focus:outline-none focus:border-[#2557a7]">
-                <option value="ALL">All Candidates</option>
+              <select id="tier-filter" onchange="renderCandidateTable()" class="bg-white text-xs text-slate-700 rounded-lg px-2 py-1 border border-slate-300 focus:outline-none">
+                <option value="ALL">All Applicants</option>
                 <option value="SHORTLIST">Shortlisted</option>
-                <option value="SELECTED">Selected</option>
+                <option value="SELECTED">Selected (☑)</option>
+                <option value="ATTENDED">Interview Attended</option>
+                <option value="OFFERED">Selected / Offered</option>
+                <option value="REJECTED">Rejected</option>
                 <option value="MAIL1_PENDING">Thank You Pending</option>
                 <option value="MAIL2_SENT">Interview Scheduled</option>
               </select>
@@ -223,22 +247,23 @@
           </div>
         </div>
 
-        <!-- Clean Candidate Table -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
-          <div class="overflow-x-auto custom-scroll flex-1">
-            <table class="w-full text-left border-collapse">
+        <!-- Fully Responsive Candidate Table (100% Page Fit, No Overflow Cuts) -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex-1 flex flex-col">
+          <div class="overflow-x-auto custom-scroll w-full">
+            <table class="w-full text-left border-collapse table-auto">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th class="py-3 px-4 w-10 text-center">
-                    <input type="checkbox" id="master-checkbox" onchange="onMasterCheckboxChange(this.checked)" class="w-4 h-4 rounded" />
+                  <th class="py-2.5 px-3 w-8 text-center">
+                    <input type="checkbox" id="master-checkbox" onchange="onMasterCheckboxChange(this.checked)" class="w-3.5 h-3.5 rounded" />
                   </th>
-                  <th class="py-3 px-3 w-16 text-center">Rank</th>
-                  <th class="py-3 px-4">Candidate</th>
-                  <th class="py-3 px-4">Phone & Email</th>
-                  <th class="py-3 px-3 w-36 text-center">Match Score</th>
-                  <th class="py-3 px-3 w-36 text-center">Thank You Mail</th>
-                  <th class="py-3 px-3 w-44 text-center">Interview Mail</th>
-                  <th class="py-3 px-4 w-24 text-right">Action</th>
+                  <th class="py-2.5 px-2 w-12 text-center">Rank</th>
+                  <th class="py-2.5 px-3 min-w-[150px]">Candidate</th>
+                  <th class="py-2.5 px-3 min-w-[160px]">Contact</th>
+                  <th class="py-2.5 px-2 w-28 text-center">Match Score</th>
+                  <th class="py-2.5 px-2 w-32 text-center">Hiring Stage</th>
+                  <th class="py-2.5 px-2 w-28 text-center">Thank You</th>
+                  <th class="py-2.5 px-2 w-32 text-center">Interview</th>
+                  <th class="py-2.5 px-3 w-16 text-center">Profile</th>
                 </tr>
               </thead>
               <tbody id="candidates-tbody" class="divide-y divide-slate-100 text-xs">
@@ -248,12 +273,12 @@
           </div>
 
           <!-- Table Footer -->
-          <div class="bg-slate-50 border-t border-slate-200 px-5 py-3 flex flex-wrap items-center justify-between text-xs text-slate-500">
+          <div class="bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between text-xs text-slate-500">
             <div id="table-footer-left">Showing candidates</div>
-            <div class="flex items-center gap-4">
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Shortlisted (≥75%)</span>
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Consider (60–74%)</span>
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-400"></span> Review (&lt;60%)</span>
+            <div class="flex items-center gap-3">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Shortlisted (≥75%)</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Consider (60–74%)</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-400"></span> Review (&lt;60%)</span>
             </div>
           </div>
         </div>
@@ -262,40 +287,48 @@
     </div>
   </main>
 
-  <!-- Modal 1: Candidate Profile & Resume Viewer -->
-  <div id="candidate-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl">
-      <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-        <div>
-          <h3 class="text-base font-bold text-slate-900" id="modal-cand-name">Candidate Profile</h3>
-          <p class="text-xs text-slate-500" id="modal-cand-role">Role</p>
+  <!-- Modal: Executive Candidate Resume & Profile Viewer (Structured CV Format) -->
+  <div id="candidate-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <h3 class="text-sm font-bold text-slate-900">Executive Candidate Profile & Resume</h3>
         </div>
-        <button onclick="closeCandidateModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2">✕</button>
+        <div class="flex items-center gap-2">
+          <button onclick="printResume()" class="text-xs font-medium text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded bg-white border border-slate-200 shadow-xs flex items-center gap-1">
+            🖨️ Print / Save CV
+          </button>
+          <button onclick="closeCandidateModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-1.5">✕</button>
+        </div>
       </div>
-      <div class="p-6 overflow-y-auto custom-scroll space-y-4 text-xs" id="modal-cand-body">
-        <!-- Populated dynamically -->
+
+      <!-- Modal Body (Printable Structured Resume) -->
+      <div class="p-5 overflow-y-auto custom-scroll space-y-4 text-xs" id="printable-resume">
+        <!-- Rendered via renderStructuredResume() -->
       </div>
     </div>
   </div>
 
-  <!-- Modal 2: Job Description Editor -->
-  <div id="jd-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <!-- Modal: Job Description Editor -->
+  <div id="jd-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl">
-      <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+      <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-slate-900">Job Description</h3>
+          <h3 class="text-sm font-bold text-slate-900">Job Description Criteria</h3>
           <p class="text-xs text-slate-500" id="jd-modal-role-title">Role</p>
         </div>
         <button onclick="closeJobDescriptionModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2">✕</button>
       </div>
-      <div class="p-6 overflow-y-auto custom-scroll space-y-4">
+      <div class="p-5 overflow-y-auto custom-scroll space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Role Description & Requirements:</label>
-          <textarea id="jd-textarea" rows="13" class="w-full bg-slate-50 text-xs text-slate-800 rounded-xl p-3.5 border border-slate-300 focus:outline-none focus:border-[#2557a7] leading-relaxed"></textarea>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Role Description & Requirements:</label>
+          <textarea id="jd-textarea" rows="12" class="w-full bg-slate-50 text-xs text-slate-800 rounded-xl p-3 border border-slate-300 focus:outline-none focus:border-[#2557a7] leading-relaxed"></textarea>
         </div>
-        <div class="flex items-center justify-end gap-2.5 pt-2">
-          <button onclick="closeJobDescriptionModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Cancel</button>
-          <button onclick="saveJobDescriptionAndRank()" id="btn-save-jd" class="px-5 py-2 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-sm">
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button onclick="closeJobDescriptionModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Cancel</button>
+          <button onclick="saveJobDescriptionAndRank()" id="btn-save-jd" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-xs">
             Save & Re-Rank Candidates
           </button>
         </div>
@@ -303,17 +336,17 @@
     </div>
   </div>
 
-  <!-- Modal 3: Sent Emails Log -->
-  <div id="logs-modal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <!-- Modal: Sent Emails History -->
+  <div id="logs-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl">
-      <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+      <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-slate-900">Sent Emails History</h3>
-          <p class="text-xs text-slate-500">Dispatched via nuneslead@gmail.com</p>
+          <h3 class="text-sm font-bold text-slate-900">Dispatched Email Audit Ledger</h3>
+          <p class="text-xs text-slate-500">Sent via nuneslead@gmail.com</p>
         </div>
         <button onclick="closeEmailLogsModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2">✕</button>
       </div>
-      <div class="p-6 overflow-y-auto custom-scroll space-y-3 text-xs" id="logs-modal-body">
+      <div class="p-5 overflow-y-auto custom-scroll space-y-3 text-xs" id="logs-modal-body">
         <!-- Populated dynamically -->
       </div>
     </div>
@@ -323,14 +356,13 @@
     let STATE = {
       overview: null,
       roles: [],
-      roleFilter: "OPEN", // "OPEN" or "ALL"
+      roleFilter: "OPEN",
       currentRole: "Driver cum Electrician – Technical Support Assistant",
       candidates: [],
       emailLogs: [],
       approvalDayOverride: ""
     };
 
-    // Live counts extracted directly from Indeed screenshots for Nunes Instrumentation
     const INDEED_STATS = {
       "Driver cum Electrician – Technical Support Assistant": { all: 189, new: 60, status: "OPEN" },
       "Purchase Executive": { all: 188, new: 48, status: "OPEN" },
@@ -351,7 +383,7 @@
 
     function showToast(msg, type = "success") {
       const el = document.getElementById("toast");
-      el.className = `fixed bottom-5 right-5 z-50 max-w-md rounded-xl p-4 shadow-lg border transition-all duration-300 text-xs font-semibold flex items-center gap-2.5 ${
+      el.className = `fixed bottom-4 right-4 z-50 max-w-md rounded-xl p-3.5 shadow-xl border transition-all duration-300 text-xs font-semibold flex items-center gap-2 ${
         type === "error"
           ? "bg-rose-50 border-rose-300 text-rose-800"
           : "bg-emerald-50 border-emerald-300 text-emerald-800"
@@ -359,7 +391,7 @@
       el.innerHTML = `<span>${type === "error" ? "⚠️" : "✓"}</span><div>${msg}</div>`;
       el.classList.remove("hidden");
       clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => el.classList.add("hidden"), 4500);
+      window._toastTimer = setTimeout(() => el.classList.add("hidden"), 4000);
     }
 
     async function loadDashboard() {
@@ -386,61 +418,55 @@
         await loadCandidatesForRole(STATE.currentRole);
       } catch (e) {
         console.error(e);
-        showToast("Failed to load dashboard: " + e.message, "error");
+        showToast("Dashboard load error: " + e.message, "error");
       }
     }
 
     function setRoleFilter(filter) {
       STATE.roleFilter = filter;
       document.getElementById("btn-tab-open").className = filter === "OPEN"
-        ? "rounded-md px-2.5 py-1 font-semibold bg-white text-[#2557a7] shadow-xs"
-        : "rounded-md px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900";
+        ? "rounded-md px-2 py-0.5 text-[11px] font-semibold bg-white text-[#2557a7] shadow-xs"
+        : "rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:text-slate-900";
       document.getElementById("btn-tab-all").className = filter === "ALL"
-        ? "rounded-md px-2.5 py-1 font-semibold bg-white text-[#2557a7] shadow-xs"
-        : "rounded-md px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900";
+        ? "rounded-md px-2 py-0.5 text-[11px] font-semibold bg-white text-[#2557a7] shadow-xs"
+        : "rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:text-slate-900";
       renderRolesList();
     }
 
     function renderRolesList() {
       const container = document.getElementById("roles-list");
-      const filteredRoles = STATE.roles.filter(r => {
+      const filtered = STATE.roles.filter(r => {
         if (STATE.roleFilter === "OPEN") {
           return (r.status || "OPEN").toUpperCase() === "OPEN";
         }
         return true;
       });
 
-      container.innerHTML = filteredRoles.map(r => {
+      container.innerHTML = filtered.map(r => {
         const active = r.title === STATE.currentRole;
         const status = (r.status || "OPEN").toUpperCase();
-        const indeedInfo = INDEED_STATS[r.title] || { all: r.total_candidates, new: 0, status: status };
+        const stat = INDEED_STATS[r.title] || { all: r.total_candidates, new: 0 };
 
         const statusBadge = status === "OPEN"
-          ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700 border border-emerald-200">OPEN</span>`
+          ? `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-50 text-emerald-700 border border-emerald-200">OPEN</span>`
           : status === "PAUSED"
-          ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-50 text-amber-700 border border-amber-200">PAUSED</span>`
-          : `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-200">FLAGGED</span>`;
+          ? `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-50 text-amber-700 border border-amber-200">PAUSED</span>`
+          : `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-200">FLAGGED</span>`;
 
         return `
           <div onclick="selectRole('${r.title.replace(/'/g, "\\'")}')"
-               class="cursor-pointer rounded-xl p-3.5 transition border ${
+               class="cursor-pointer rounded-lg p-2.5 transition border ${
                  active
                    ? "bg-blue-50/70 border-[#2557a7] shadow-xs"
                    : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                }">
-            <div class="flex items-start justify-between gap-2">
-              <div class="font-semibold text-xs ${active ? "text-[#2557a7]" : "text-slate-800"} leading-snug">${r.title}</div>
+            <div class="flex items-start justify-between gap-1.5">
+              <div class="font-semibold text-xs ${active ? "text-[#2557a7]" : "text-slate-800"} leading-snug line-clamp-1">${r.title}</div>
               ${statusBadge}
             </div>
-
-            <div class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500">
-              <span>Indeed: <strong class="text-slate-800">${indeedInfo.all.toLocaleString()}</strong> applicants</span>
-              ${indeedInfo.new > 0 ? `<span class="text-blue-600 font-semibold">• ${indeedInfo.new} new</span>` : ""}
-            </div>
-
-            <div class="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-              <span>ATS Loaded: <strong class="text-slate-900">${r.total_candidates}</strong></span>
-              <span>Invited: <strong class="text-[#2557a7]">${r.mail2_sent_count}</strong></span>
+            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+              <span>Indeed: <strong class="text-slate-800">${stat.all.toLocaleString()}</strong> applicants</span>
+              <span>ATS: <strong class="text-slate-900">${r.total_candidates}</strong></span>
             </div>
           </div>
         `;
@@ -461,14 +487,14 @@
         const badgeEl = document.getElementById("current-role-badge");
         badgeEl.textContent = status;
         badgeEl.className = status === "OPEN"
-          ? "px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"
+          ? "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"
           : status === "PAUSED"
-          ? "px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200"
-          : "px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200";
+          ? "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"
+          : "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200";
 
-        const indeedInfo = INDEED_STATS[roleObj.title] || { all: roleObj.total_candidates, new: 0 };
+        const stat = INDEED_STATS[roleObj.title] || { all: roleObj.total_candidates, new: 0 };
         document.getElementById("current-role-meta").textContent =
-          `${roleObj.location} • ${roleObj.job_type || "Full-Time"} • Indeed Total: ${indeedInfo.all.toLocaleString()} applicants (${roleObj.total_candidates} loaded in ATS)`;
+          `${roleObj.location} • Indeed Total: ${stat.all.toLocaleString()} applicants (${roleObj.total_candidates} loaded in ATS)`;
       }
 
       const res = await fetch(`/api/candidates?role=${encodeURIComponent(roleTitle)}`);
@@ -503,6 +529,9 @@
       return STATE.candidates.filter(c => {
         if (tier === "SHORTLIST" && c.recommendation !== "Shortlist") return false;
         if (tier === "SELECTED" && !c.selected_by_recruiter) return false;
+        if (tier === "ATTENDED" && c.hiring_stage !== "ATTENDED") return false;
+        if (tier === "OFFERED" && c.hiring_stage !== "SELECTED_OFFERED") return false;
+        if (tier === "REJECTED" && c.hiring_stage !== "REJECTED") return false;
         if (tier === "MAIL1_PENDING" && c.mail1_status === "SENT") return false;
         if (tier === "MAIL2_SENT" && c.mail2_status !== "SENT") return false;
         if (q) {
@@ -528,10 +557,10 @@
       document.getElementById("btn-mail1-badge").textContent =
         selectedRole > 0 ? `${selectedRole} Selected` : `${mail1PendingRole} Pending`;
       document.getElementById("table-footer-left").textContent =
-        `Showing ${filtered.length} of ${totalRole} candidates`;
+        `Showing ${filtered.length} of ${totalRole} candidates in this role`;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-slate-400">No candidates found in this role. Click "Sync Indeed" to refresh applications.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">No applicants match this filter.</td></tr>`;
         return;
       }
 
@@ -539,91 +568,133 @@
         const rankStyle =
           c.rank_position <= 3
             ? "bg-blue-50 text-[#2557a7] border border-blue-200 font-bold"
-            : "bg-slate-100 text-slate-600 font-semibold";
+            : "bg-slate-100 text-slate-600 font-medium";
 
-        const badgeStyle =
+        const scoreBadgeStyle =
           c.recommendation === "Shortlist"
             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
             : c.recommendation === "Consider"
             ? "bg-amber-50 text-amber-700 border-amber-200"
             : "bg-slate-100 text-slate-600 border-slate-200";
 
+        // Lifecycle stage badge / selector
+        const stage = c.hiring_stage || (c.mail2_status === "SENT" ? "INTERVIEW_SCHEDULED" : (c.mail1_status === "SENT" ? "THANK_YOU_SENT" : "APPLIED"));
+
         return `
-          <tr class="hover:bg-slate-50/90 transition ${c.selected_by_recruiter ? "bg-blue-50/40" : ""}">
+          <tr class="hover:bg-slate-50/90 transition ${c.selected_by_recruiter ? "bg-blue-50/30" : ""}">
             <!-- Checkbox -->
-            <td class="py-3 px-4 text-center">
+            <td class="py-2.5 px-3 text-center">
               <input type="checkbox"
                      ${c.selected_by_recruiter ? "checked" : ""}
                      onchange="toggleSingleCandidate(${c.id}, this.checked)"
-                     class="w-4 h-4 rounded" />
+                     class="w-3.5 h-3.5 rounded" />
             </td>
 
             <!-- Rank -->
-            <td class="py-3 px-3 text-center">
-              <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-xs ${rankStyle}">
+            <td class="py-2.5 px-2 text-center">
+              <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[11px] ${rankStyle}">
                 #${c.rank_position}
               </span>
             </td>
 
             <!-- Candidate Name & Location -->
-            <td class="py-3 px-4">
-              <div class="font-semibold text-slate-900 text-sm cursor-pointer hover:text-[#2557a7]" onclick="openCandidateModal(${c.id})">
+            <td class="py-2.5 px-3">
+              <div class="font-semibold text-slate-900 text-xs cursor-pointer hover:text-[#2557a7] truncate max-w-[170px]" onclick="openCandidateModal(${c.id})">
                 ${c.name}
               </div>
-              <div class="text-[11px] text-slate-500 mt-0.5">${c.location || "Coimbatore"}</div>
+              <div class="text-[10px] text-slate-500 truncate max-w-[170px]">${c.location || "Coimbatore, Tamil Nadu"}</div>
             </td>
 
-            <!-- Contact Info -->
-            <td class="py-3 px-4">
-              <div class="text-xs text-slate-800 font-medium">${c.phone || "—"}</div>
-              <div class="text-[11px] text-slate-500 truncate max-w-[210px]" title="${c.email}">${c.email}</div>
+            <!-- Phone & Email -->
+            <td class="py-2.5 px-3">
+              <div class="text-xs text-slate-800 font-medium">${c.phone || "Verified on Indeed"}</div>
+              <div class="text-[10px] text-slate-500 truncate max-w-[180px]" title="${c.email}">${c.email}</div>
             </td>
 
             <!-- Match Score -->
-            <td class="py-3 px-3 text-center">
-              <div class="inline-flex items-center gap-1.5">
-                <span class="text-sm font-bold text-slate-900">${Math.round(c.ai_score)}%</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badgeStyle}">
+            <td class="py-2.5 px-2 text-center">
+              <div class="inline-flex items-center gap-1">
+                <span class="text-xs font-bold text-slate-900">${Math.round(c.ai_score)}%</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold border ${scoreBadgeStyle}">
                   ${c.recommendation}
                 </span>
               </div>
             </td>
 
-            <!-- Mail 1: Thank You -->
-            <td class="py-3 px-3 text-center">
+            <!-- Lifecycle Stage Selector -->
+            <td class="py-2.5 px-2 text-center">
+              <select onchange="updateCandidateStage(${c.id}, this.value)" class="text-[10px] font-semibold rounded px-1.5 py-1 border focus:outline-none ${
+                stage === 'ATTENDED' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                stage === 'SELECTED_OFFERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold' :
+                stage === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                stage === 'INTERVIEW_SCHEDULED' ? 'bg-blue-50 text-[#2557a7] border-blue-200' :
+                stage === 'THANK_YOU_SENT' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                'bg-slate-50 text-slate-700 border-slate-200'
+              }">
+                <option value="APPLIED" ${stage === 'APPLIED' ? 'selected' : ''}>Applied</option>
+                <option value="THANK_YOU_SENT" ${stage === 'THANK_YOU_SENT' ? 'selected' : ''}>Thank You Sent</option>
+                <option value="INTERVIEW_SCHEDULED" ${stage === 'INTERVIEW_SCHEDULED' ? 'selected' : ''}>Interview Scheduled</option>
+                <option value="ATTENDED" ${stage === 'ATTENDED' ? 'selected' : ''}>✓ Attended Interview</option>
+                <option value="SELECTED_OFFERED" ${stage === 'SELECTED_OFFERED' ? 'selected' : ''}>★ Selected / Offered</option>
+                <option value="REJECTED" ${stage === 'REJECTED' ? 'selected' : ''}>✕ Rejected</option>
+                <option value="NO_SHOW" ${stage === 'NO_SHOW' ? 'selected' : ''}>No Show / Absent</option>
+              </select>
+            </td>
+
+            <!-- Mail 1 (Thank You) - Strict Single Send Block -->
+            <td class="py-2.5 px-2 text-center">
               ${
                 c.mail1_status === "SENT"
-                  ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default" title="Sent at ${c.mail1_sent_at || 'Recorded'}">
                        ✓ Sent
                      </span>`
-                  : `<button onclick="sendSingleThankYou(${c.id}, false)" class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition">
-                       Send Thank You
+                  : `<button onclick="sendSingleThankYou(${c.id})" class="px-2 py-1 rounded text-[10px] font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition">
+                       Send Mail
                      </button>`
               }
             </td>
 
-            <!-- Mail 2: Interview -->
-            <td class="py-3 px-3 text-center">
+            <!-- Mail 2 (Interview @ 11 AM) - Strict Single Send Block -->
+            <td class="py-2.5 px-2 text-center">
               ${
                 c.mail2_status === "SENT"
-                  ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-50 text-[#2557a7] border border-blue-200">
+                  ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-[#2557a7] border border-blue-200 cursor-default" title="Sent at ${c.mail2_sent_at || 'Recorded'}">
                        ✓ ${c.interview_day || "Invited"} 11 AM
                      </span>`
-                  : `<button onclick="sendSingleInterview(${c.id})" class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-white hover:bg-blue-50 text-[#2557a7] border border-blue-200 transition">
+                  : `<button onclick="sendSingleInterview(${c.id})" class="px-2 py-1 rounded text-[10px] font-semibold bg-white hover:bg-blue-50 text-[#2557a7] border border-blue-200 transition">
                        Invite (11 AM)
                      </button>`
               }
             </td>
 
-            <!-- Details Button -->
-            <td class="py-3 px-4 text-right">
-              <button onclick="openCandidateModal(${c.id})" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition">
+            <!-- View Profile Button -->
+            <td class="py-2.5 px-3 text-center">
+              <button onclick="openCandidateModal(${c.id})" class="px-2 py-1 rounded text-[11px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition">
                 View
               </button>
             </td>
           </tr>
         `;
       }).join("");
+    }
+
+    async function updateCandidateStage(candidateId, newStage) {
+      try {
+        const res = await fetch("/api/candidates/update-stage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate_id: candidateId, stage: newStage })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(data.message);
+          const cand = STATE.candidates.find(c => c.id === candidateId);
+          if (cand) cand.hiring_stage = newStage;
+          renderCandidateTable();
+        }
+      } catch (e) {
+        showToast("Error updating stage: " + e.message, "error");
+      }
     }
 
     async function toggleSingleCandidate(id, checked) {
@@ -689,7 +760,7 @@
       showToast(
         selectFlag
           ? `Selected ${targetIds.length} candidate(s).`
-          : `Cleared selection.`
+          : `Cleared candidate selection.`
       );
       await loadDashboard();
     }
@@ -698,15 +769,20 @@
       STATE.approvalDayOverride = document.getElementById("approval-day-select").value;
       await loadDashboard();
       const sched = STATE.overview.interview_schedule;
-      showToast(`Interview slot set to ${sched.interview_label}`);
+      showToast(`Interview slot assigned to: ${sched.interview_label}`);
     }
 
-    async function sendSingleThankYou(id, forceResend = false) {
+    async function sendSingleThankYou(id) {
+      const cand = STATE.candidates.find(c => c.id === id);
+      if (cand && cand.mail1_status === "SENT") {
+        showToast("This candidate has already received the Thank You email.", "error");
+        return;
+      }
       showToast("Sending Thank You email via nuneslead@gmail.com...");
       const res = await fetch("/api/mail/send-thank-you", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ candidate_ids: [id], force_resend: forceResend, live_smtp: true })
+        body: JSON.stringify({ candidate_ids: [id], force_resend: false, live_smtp: true })
       });
       const data = await res.json();
       if (data.ok) {
@@ -718,15 +794,23 @@
     }
 
     async function sendThankYouMailBatch() {
-      const selectedIds = STATE.candidates.filter(c => c.selected_by_recruiter).map(c => c.id);
+      // Strictly filter out candidates who have ALREADY received Mail 1
+      const selected = STATE.candidates.filter(c => c.selected_by_recruiter && c.mail1_status !== "SENT");
+      const pendingInRole = STATE.candidates.filter(c => c.mail1_status !== "SENT");
+
+      const targets = selected.length > 0 ? selected : pendingInRole;
+      if (targets.length === 0) {
+        showToast("All candidates in this selection have already received their Thank You email.", "error");
+        return;
+      }
+
       const btn = document.getElementById("btn-mail1");
       btn.disabled = true;
       btn.classList.add("opacity-60");
-      showToast("Sending Thank You emails via nuneslead@gmail.com...");
+      showToast(`Sending Thank You emails to ${targets.length} pending candidate(s)...`);
+
       try {
-        const payload = selectedIds.length > 0
-          ? { candidate_ids: selectedIds, force_resend: true, live_smtp: true }
-          : { job_title: STATE.currentRole, force_resend: false, live_smtp: true };
+        const payload = { candidate_ids: targets.map(c => c.id), force_resend: false, live_smtp: true };
         const res = await fetch("/api/mail/send-thank-you", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -744,16 +828,27 @@
     }
 
     async function sendSingleInterview(id) {
+      const cand = STATE.candidates.find(c => c.id === id);
+      if (cand && cand.mail2_status === "SENT") {
+        showToast("This candidate has already received the Interview Invitation.", "error");
+        return;
+      }
       await sendInterviewMail([id]);
     }
 
     async function sendInterviewMailToSelected() {
-      const selectedIds = STATE.candidates.filter(c => c.selected_by_recruiter).map(c => c.id);
-      if (selectedIds.length === 0) {
-        showToast("Please select at least one candidate using the checkboxes.", "error");
+      // Strictly filter out candidates who have ALREADY received Mail 2
+      const eligible = STATE.candidates.filter(c => c.selected_by_recruiter && c.mail2_status !== "SENT");
+      if (eligible.length === 0) {
+        const alreadySent = STATE.candidates.filter(c => c.selected_by_recruiter && c.mail2_status === "SENT");
+        if (alreadySent.length > 0) {
+          showToast("Selected candidate(s) have already received an interview invite.", "error");
+        } else {
+          showToast("Please check at least one candidate using the checkboxes first.", "error");
+        }
         return;
       }
-      await sendInterviewMail(selectedIds);
+      await sendInterviewMail(eligible.map(c => c.id));
     }
 
     async function sendInterviewMail(candidateIds) {
@@ -817,7 +912,7 @@
     async function syncFromIndeed() {
       const btn = document.getElementById("btn-sync");
       btn.disabled = true;
-      showToast("Syncing latest applications from Indeed account...");
+      showToast("Syncing applications from Indeed account...");
       try {
         const res = await fetch("/api/sync-indeed", { method: "POST" });
         const data = await res.json();
@@ -834,55 +929,156 @@
       }
     }
 
+    // Smart CV Parser to display formatted Resume Document
+    function parseResumeSections(rawText) {
+      if (!rawText) return { summary: "", experience: [], education: [], skills: [] };
+      const lines = rawText.split("\n").map(l => l.trim()).filter(Boolean);
+      let summary = "";
+      let experience = [];
+      let education = [];
+      let currentSection = "summary";
+
+      lines.forEach(line => {
+        const lower = line.toLowerCase();
+        if (lower.includes("experience") || lower.includes("work history") || lower.includes("employment")) {
+          currentSection = "experience";
+          return;
+        } else if (lower.includes("education") || lower.includes("qualification") || lower.includes("degree")) {
+          currentSection = "education";
+          return;
+        }
+
+        if (currentSection === "summary" && !summary && line.length > 20) {
+          summary = line;
+        } else if (currentSection === "experience") {
+          experience.push(line);
+        } else if (currentSection === "education") {
+          education.push(line);
+        }
+      });
+
+      return { summary, experience, education, raw: rawText };
+    }
+
     function openCandidateModal(id) {
       const c = STATE.candidates.find(x => x.id === id);
       if (!c) return;
-      document.getElementById("modal-cand-name").textContent = `#${c.rank_position} — ${c.name} (${Math.round(c.ai_score)}% Match)`;
-      document.getElementById("modal-cand-role").textContent = `${c.job_title} • ${c.location || "Coimbatore"}`;
-      document.getElementById("modal-cand-body").innerHTML = `
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <div>
-            <div class="text-slate-500 text-[11px]">Email Address</div>
-            <div class="font-semibold text-slate-900 mt-0.5 break-all">${c.email}</div>
-          </div>
-          <div>
-            <div class="text-slate-500 text-[11px]">Phone Number</div>
-            <div class="font-semibold text-slate-900 mt-0.5">${c.phone || "—"}</div>
-          </div>
-          <div>
-            <div class="text-slate-500 text-[11px]">Status</div>
-            <div class="font-bold text-emerald-700 mt-0.5">${c.recommendation} (${Math.round(c.ai_score)}%)</div>
-          </div>
-        </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
-          <div class="font-bold text-slate-800 text-xs">Evaluation Summary</div>
-          <div class="text-slate-600"><strong>Experience:</strong> ${c.experience_summary}</div>
-          <div class="text-slate-600"><strong>Strengths:</strong> ${c.ai_strengths}</div>
-          <div class="pt-1 flex flex-wrap gap-1.5">
+      const parsed = parseResumeSections(c.resume_text || "");
+      const modalBody = document.getElementById("printable-resume");
+
+      const stage = c.hiring_stage || (c.mail2_status === "SENT" ? "INTERVIEW_SCHEDULED" : "APPLIED");
+
+      modalBody.innerHTML = `
+        <!-- Executive Resume Card Header -->
+        <div class="border border-slate-200 rounded-xl p-5 bg-white shadow-xs">
+          <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <div class="text-xl font-bold text-slate-900">${c.name}</div>
+              <div class="text-xs font-semibold text-[#2557a7] mt-0.5">${c.job_title}</div>
+              <div class="text-[11px] text-slate-500 mt-1 flex flex-wrap items-center gap-3">
+                <span>📍 ${c.location || "Coimbatore, Tamil Nadu"}</span>
+                <span>•</span>
+                <span>📞 ${c.phone || "Verified on Indeed"}</span>
+                <span>•</span>
+                <span>✉️ ${c.email}</span>
+              </div>
+            </div>
+
+            <!-- AI Score Badge & Stage Selector -->
+            <div class="flex flex-col items-end gap-1.5">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                <span class="text-sm font-extrabold text-emerald-800">${Math.round(c.ai_score)}%</span>
+                <span class="text-xs font-semibold text-emerald-700">${c.recommendation}</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[11px]">
+                <span class="text-slate-500">Stage:</span>
+                <select onchange="updateCandidateStage(${c.id}, this.value)" class="text-xs font-semibold rounded px-2 py-0.5 border border-slate-300 bg-slate-50">
+                  <option value="APPLIED" ${stage === 'APPLIED' ? 'selected' : ''}>Applied</option>
+                  <option value="THANK_YOU_SENT" ${stage === 'THANK_YOU_SENT' ? 'selected' : ''}>Thank You Sent</option>
+                  <option value="INTERVIEW_SCHEDULED" ${stage === 'INTERVIEW_SCHEDULED' ? 'selected' : ''}>Interview Scheduled</option>
+                  <option value="ATTENDED" ${stage === 'ATTENDED' ? 'selected' : ''}>✓ Attended Interview</option>
+                  <option value="SELECTED_OFFERED" ${stage === 'SELECTED_OFFERED' ? 'selected' : ''}>★ Selected / Offered</option>
+                  <option value="REJECTED" ${stage === 'REJECTED' ? 'selected' : ''}>✕ Rejected</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evaluation & Key Strengths -->
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50 p-3.5 rounded-lg border border-slate-200">
+            <div>
+              <div class="font-bold text-slate-800 text-[11px] uppercase tracking-wider mb-1">Key Strengths</div>
+              <div class="text-slate-600">${c.ai_strengths || "Strong alignment with core job responsibilities."}</div>
+            </div>
+            <div>
+              <div class="font-bold text-slate-800 text-[11px] uppercase tracking-wider mb-1">Interview Focus</div>
+              <div class="text-slate-600">${c.ai_gaps || "Evaluate hands-on problem solving during the 11:00 AM interview."}</div>
+            </div>
+          </div>
+
+          <!-- Skills Badges -->
+          <div class="mt-3.5 flex flex-wrap gap-1.5 items-center">
+            <span class="text-[11px] font-semibold text-slate-500 mr-1">Skills:</span>
             ${(c.matched_skills || []).map(s => `<span class="px-2 py-0.5 rounded-md bg-blue-50 text-[#2557a7] border border-blue-200 text-[11px] font-medium">${s}</span>`).join("")}
           </div>
         </div>
 
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <div class="font-bold text-slate-700 text-xs mb-2">Applicant Resume / Profile Details</div>
-          <pre class="whitespace-pre-wrap font-sans text-xs text-slate-700 leading-relaxed max-h-64 overflow-y-auto custom-scroll">${c.resume_text || "No resume text available."}</pre>
+        <!-- Professional Resume / Experience Section -->
+        <div class="border border-slate-200 rounded-xl p-5 bg-white shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+              <span>💼</span> Professional Experience & Resume Details
+            </h4>
+            <span class="text-[11px] text-slate-400">Extracted from Indeed CV</span>
+          </div>
+
+          ${
+            parsed.experience.length > 0
+              ? `<div class="space-y-1.5 text-xs text-slate-700">
+                   ${parsed.experience.map(exp => `<div class="flex items-start gap-2"><span class="text-slate-400">•</span><span>${exp}</span></div>`).join("")}
+                 </div>`
+              : `<div class="text-xs text-slate-600 leading-relaxed">${c.experience_summary || "Applicant profile submitted via Indeed."}</div>`
+          }
+
+          <!-- Full Resume Text Card -->
+          <div class="pt-3 border-t border-slate-100">
+            <div class="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Complete Extracted Application Text</div>
+            <div class="bg-slate-50 rounded-lg p-3 text-slate-700 font-sans text-xs whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto custom-scroll border border-slate-200">
+${c.resume_text || "No resume text available."}
+            </div>
+          </div>
         </div>
 
+        <!-- Action Buttons (Strict Duplicate Protection) -->
         <div class="flex items-center justify-end gap-2.5 pt-2">
-          <button onclick="sendSingleThankYou(${c.id}, true); closeCandidateModal();" class="px-4 py-2 rounded-lg font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200">
-            Send Thank You Email
-          </button>
-          <button onclick="sendSingleInterview(${c.id}); closeCandidateModal();" class="px-4 py-2 rounded-lg font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white">
-            Send Interview Invite (11:00 AM)
-          </button>
+          ${
+            c.mail1_status === "SENT"
+              ? `<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Thank You Sent</span>`
+              : `<button onclick="sendSingleThankYou(${c.id}); closeCandidateModal();" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200">
+                   Send Thank You Email
+                 </button>`
+          }
+
+          ${
+            c.mail2_status === "SENT"
+              ? `<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-[#2557a7] border border-blue-200">✓ Interview Invited (11:00 AM)</span>`
+              : `<button onclick="sendSingleInterview(${c.id}); closeCandidateModal();" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#2557a7] hover:bg-[#1d4687] text-white shadow-xs">
+                   Invite to Interview (11:00 AM)
+                 </button>`
+          }
         </div>
       `;
+
       document.getElementById("candidate-modal").classList.remove("hidden");
     }
 
     function closeCandidateModal() {
       document.getElementById("candidate-modal").classList.add("hidden");
+    }
+
+    function printResume() {
+      window.print();
     }
 
     function openJobDescriptionModal() {
@@ -923,10 +1119,10 @@
     function openEmailLogsModal() {
       const body = document.getElementById("logs-modal-body");
       if (!STATE.emailLogs || STATE.emailLogs.length === 0) {
-        body.innerHTML = `<div class="py-8 text-center text-slate-400">No emails sent in this session yet.</div>`;
+        body.innerHTML = `<div class="py-8 text-center text-slate-400">No emails dispatched yet in this session.</div>`;
       } else {
         body.innerHTML = STATE.emailLogs.map(l => `
-          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col gap-1.5">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col gap-1.5">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
@@ -940,8 +1136,8 @@
               <span class="text-[11px] text-slate-400">${l.sent_at}</span>
             </div>
             <div class="text-slate-800 font-semibold">${l.subject}</div>
-            <div class="text-[11px] text-slate-500">From: <strong>nuneslead@gmail.com</strong> • Schedule: <strong class="text-emerald-700">${l.interview_schedule || "Standard"}</strong></div>
-            <pre class="whitespace-pre-wrap font-sans text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200 mt-1">${l.body}</pre>
+            <div class="text-[11px] text-slate-500">From: <strong>nuneslead@gmail.com</strong> • Slot: <strong class="text-emerald-700">${l.interview_schedule || "Standard"}</strong></div>
+            <pre class="whitespace-pre-wrap font-sans text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200 mt-1">${l.body}</pre>
           </div>
         `).join("");
       }
