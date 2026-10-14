@@ -11,6 +11,7 @@ import imaplib
 import email
 import urllib.request
 import base64
+import html
 from email.message import EmailMessage
 from email.header import decode_header
 from email.utils import parseaddr, formatdate, make_msgid
@@ -222,6 +223,10 @@ def init_db():
             conn.execute("ALTER TABLE candidates ADD COLUMN recruiter_notes TEXT DEFAULT ''")
         except Exception:
             pass
+        try:
+            conn.execute("ALTER TABLE email_logs ADD COLUMN html_body TEXT")
+        except Exception:
+            pass
 
         # Seed from seed_data.json if roles < 15 or candidates table is empty
         role_count = conn.execute("SELECT COUNT(*) FROM roles").fetchone()[0]
@@ -290,7 +295,7 @@ def set_setting(key: str, value: str):
 # ============================================================================
 # SMTP EMAIL DELIVERY ENGINE (MAIL 1: THANK YOU | MAIL 2: INTERVIEW @ 11:00 AM)
 # ============================================================================
-def send_smtp_email(recipient: str, subject: str, body: str) -> Dict[str, Any]:
+def send_smtp_email(recipient: str, subject: str, body: str, html_body: Optional[str] = None, cc: Optional[str] = None) -> Dict[str, Any]:
     smtp_email = get_setting("smtp_email", DEFAULT_SMTP_EMAIL)
     smtp_pass = get_setting("smtp_password", DEFAULT_SMTP_PASS).replace(" ", "")
     company_name = get_setting("company_name", DEFAULT_COMPANY_NAME)
@@ -301,22 +306,26 @@ def send_smtp_email(recipient: str, subject: str, body: str) -> Dict[str, Any]:
     msg = EmailMessage()
     msg["From"] = f"{company_name} HR <{smtp_email}>"
     msg["To"] = recipient
+    if cc and cc != recipient and "@" in cc:
+        msg["Cc"] = cc
     msg["Subject"] = subject
     msg["Date"] = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid()
     msg.set_content(body)
+    if html_body:
+        msg.add_alternative(html_body, subtype="html")
 
     # Try SSL 465 first, then STARTTLS 587
     try:
         context = ssl.create_default_context()
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20, context=context) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=25, context=context) as server:
             server.login(smtp_email, smtp_pass)
             server.send_message(msg)
         return {"ok": True, "transport": "smtp.gmail.com:465 (SSL)"}
     except Exception as e1:
         try:
             context = ssl.create_default_context()
-            with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as server:
+            with smtplib.SMTP("smtp.gmail.com", 587, timeout=25) as server:
                 server.ehlo()
                 server.starttls(context=context)
                 server.ehlo()
@@ -327,20 +336,154 @@ def send_smtp_email(recipient: str, subject: str, body: str) -> Dict[str, Any]:
             return {"ok": False, "error": f"SMTP error: {e1} / {e2}"}
 
 
+def send_smtp_email_batch(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    smtp_email = get_setting("smtp_email", DEFAULT_SMTP_EMAIL)
+    smtp_pass = get_setting("smtp_password", DEFAULT_SMTP_PASS).replace(" ", "")
+    company_name = get_setting("company_name", DEFAULT_COMPANY_NAME)
+
+    results = []
+    if not items:
+        return results
+
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30, context=context) as server:
+            server.login(smtp_email, smtp_pass)
+            for it in items:
+                recipient = it.get("recipient")
+                subject = it.get("subject")
+                plain_body = it.get("body", "")
+                html_body = it.get("html")
+                cc = it.get("cc")
+                cid = it.get("candidate_id")
+
+                if not recipient or "@" not in recipient:
+                    results.append({"ok": False, "candidate_id": cid, "error": "Invalid email address"})
+                    continue
+
+                try:
+                    msg = EmailMessage()
+                    msg["From"] = f"{company_name} HR <{smtp_email}>"
+                    msg["To"] = recipient
+                    if cc and cc != recipient and "@" in cc:
+                        msg["Cc"] = cc
+                    msg["Subject"] = subject
+                    msg["Date"] = formatdate(localtime=True)
+                    msg["Message-ID"] = make_msgid()
+                    msg.set_content(plain_body)
+                    if html_body:
+                        msg.add_alternative(html_body, subtype="html")
+
+                    server.send_message(msg)
+                    results.append({"ok": True, "candidate_id": cid, "transport": "batch-ssl"})
+                    time.sleep(0.15)
+                except Exception as send_err:
+                    results.append({"ok": False, "candidate_id": cid, "error": str(send_err)})
+    except Exception as conn_err:
+        for it in items:
+            res = send_smtp_email(it["recipient"], it["subject"], it["body"], it.get("html"), it.get("cc"))
+            results.append({**res, "candidate_id": it.get("candidate_id")})
+
+    return results
+
+
 def build_thank_you_email(candidate_name: str, job_title: str) -> Dict[str, str]:
     company_name = get_setting("company_name", DEFAULT_COMPANY_NAME)
-    subject = f"Thank you for applying – {job_title}"
-    body = (
+    phone_contact = "+91 93617 73377"
+    hr_email = get_setting("smtp_email", DEFAULT_SMTP_EMAIL)
+
+    subject = f"Application Received: {job_title} – {company_name}"
+    plain_body = (
         f"Dear {candidate_name},\n\n"
-        f"Thank you for applying for the {job_title} position at {company_name}.\n\n"
-        f"We have received your application and our recruitment team will review your profile. "
-        f"If your experience and qualifications match the role requirements, we will contact you regarding the next steps.\n\n"
-        f"Regards,\n"
-        f"HR Team\n"
+        f"Thank you for submitting your application for the position of {job_title} at {company_name}.\n\n"
+        f"We have successfully received your profile into our recruitment database. Our technical evaluation team is currently screening candidate credentials against our job benchmarks and role specifications.\n\n"
+        f"If your profile is shortlisted for the next phase, our HR team will reach out to you with an official interview invitation detailing your schedule, venue, and reporting requirements.\n\n"
+        f"We appreciate your interest in building a career with {company_name}.\n\n"
+        f"Warm regards,\n"
+        f"Human Resources & Talent Acquisition Team\n"
         f"{company_name}\n"
-        f"Rathinapuri, Coimbatore, Tamil Nadu"
+        f"Rathinapuri, Coimbatore, Tamil Nadu\n"
+        f"Contact: {phone_contact} • Email: {hr_email}"
     )
-    return {"subject": subject, "body": body}
+
+    html_body = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Received - {html.escape(job_title)}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 25px 12px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 620px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e3a8a 0%, #2557a7 100%); padding: 30px 32px 24px 32px; text-align: left;">
+              <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">
+                      {html.escape(company_name)}
+                    </div>
+                    <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px; font-weight: 500;">
+                      Industrial Testing & Instrumentation Equipment • Estd. 1974
+                    </div>
+                  </td>
+                  <td align="right" valign="middle">
+                    <span style="background-color: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 16px; text-transform: uppercase;">
+                      Application Logged
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              <div style="height: 3px; background: linear-gradient(90deg, #10b981 0%, #34d399 100%); margin-top: 18px; border-radius: 2px;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 32px 22px 32px;">
+              <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 10px;">
+                Dear {html.escape(candidate_name)},
+              </div>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #334155; margin: 0 0 14px 0;">
+                Thank you for applying for the position of <strong style="color: #2557a7;">{html.escape(job_title)}</strong> with <strong>{html.escape(company_name)}</strong>.
+              </p>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #334155; margin: 0 0 18px 0;">
+                Your application and resume have been successfully logged into our recruitment system. Our technical evaluation team is currently screening candidate qualifications and domain experience against our operational requirements in Coimbatore.
+              </p>
+              <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+                <div style="font-size: 12px; font-weight: 700; color: #166534; margin-bottom: 4px;">
+                  ✓ What Happens Next?
+                </div>
+                <div style="font-size: 12px; color: #15803d; line-height: 1.5;">
+                  Shortlisted candidates will receive an official interview invitation via email and SMS detailing the scheduled time (11:00 AM), venue, and document checklist.
+                </div>
+              </div>
+              <p style="font-size: 12.5px; line-height: 1.5; color: #475569; margin: 0 0 18px 0;">
+                We appreciate the time you took to apply and look forward to reviewing your qualifications.
+              </p>
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">Warm Regards,</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: #2557a7; margin-top: 2px;">Human Resources & Talent Acquisition Team</div>
+                <div style="font-size: 11.5px; color: #475569; margin-top: 2px;"><strong>{html.escape(company_name)}</strong></div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Rathinapuri, Coimbatore - 641027, Tamil Nadu, India</div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Helpline: {phone_contact} • Email: {hr_email}</div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 32px; text-align: center; font-size: 10.5px; color: #94a3b8; line-height: 1.4;">
+              © 2026 {html.escape(company_name)}. All rights reserved.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
+    return {"subject": subject, "body": plain_body, "html": html_body}
 
 
 def build_interview_email(candidate_name: str, job_title: str, schedule: Dict[str, str]) -> Dict[str, str]:
@@ -348,48 +491,272 @@ def build_interview_email(candidate_name: str, job_title: str, schedule: Dict[st
     day_name = schedule["interview_day"]
     date_str = schedule["interview_date"]
     timing = schedule.get("interview_time", "11:00 AM")
+    venue_address = "11-A, 2nd Cross, Sundarar Street, Opp. to Lala Mahal, Rathinapuri, Coimbatore, Tamil Nadu - 641027"
+    maps_link = "https://maps.google.com/?q=Nunes+Instruments+Rathinapuri+Coimbatore"
+    phone_contact = "+91 93617 73377"
+    hr_email = get_setting("smtp_email", DEFAULT_SMTP_EMAIL)
 
-    subject = f"Interview Invitation – {job_title} – {day_name}, {date_str} at {timing}"
-    body = (
+    subject = f"Interview Invitation: {job_title} – {day_name}, {date_str} at {timing} IST | {company_name}"
+    plain_body = (
         f"Dear {candidate_name},\n\n"
-        f"Greetings from {company_name}, Coimbatore.\n\n"
-        f"Thank you for applying for the position of {job_title}. Our recruitment team has reviewed and shortlisted your profile, "
-        f"and we are pleased to invite you for the interview round.\n\n"
-        f"=== INTERVIEW SCHEDULE ===\n"
-        f"• Position        : {job_title}\n"
-        f"• Interview Day   : {day_name}\n"
-        f"• Interview Date  : {date_str}\n"
-        f"• Interview Timing: {timing} IST\n"
-        f"• Location / Mode : {company_name}, Rathinapuri, Coimbatore, Tamil Nadu\n\n"
-        f"Please bring your updated resume/CV and relevant certificates. Kindly reply to this email to confirm your availability "
-        f"for {day_name}, {date_str} at {timing}.\n\n"
-        f"Regards,\n"
-        f"HR Team\n"
+        f"Greetings from {company_name}, Coimbatore!\n\n"
+        f"Thank you for applying for the position of {job_title}. Following our comprehensive ATS assessment, our recruitment team has shortlisted your profile, and we are pleased to invite you for an in-person technical & personal interview.\n\n"
+        f"=== CONFIRMED INTERVIEW SCHEDULE ===\n"
+        f"• Position Applied : {job_title}\n"
+        f"• Interview Day    : {day_name}\n"
+        f"• Interview Date   : {date_str}\n"
+        f"• Reporting Time   : {timing} IST (Sharp)\n"
+        f"• Venue / Location : {company_name}, {venue_address}\n"
+        f"• Google Maps Link : {maps_link}\n"
+        f"• HR Helpline      : {phone_contact}\n\n"
+        f"=== DOCUMENTS TO BRING ===\n"
+        f"1. 2 copies of your updated Resume / CV\n"
+        f"2. Original & photocopies of educational / technical certificates\n"
+        f"3. Valid Government Photo ID (Aadhaar / Driving License / Voter ID)\n"
+        f"4. Previous experience certificates or recent salary slips (if applicable)\n\n"
+        f"Please reply directly to this email to confirm your availability for {day_name}, {date_str} at {timing} IST.\n\n"
+        f"Warm regards,\n"
+        f"HR & Talent Acquisition Team\n"
         f"{company_name}\n"
-        f"Coimbatore, Tamil Nadu"
+        f"Coimbatore, Tamil Nadu\n"
+        f"Email: {hr_email} | Contact: {phone_contact}"
     )
-    return {"subject": subject, "body": body}
+
+    html_body = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Invitation - {html.escape(job_title)}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 25px 12px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 620px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e3a8a 0%, #2557a7 100%); padding: 30px 32px 24px 32px; text-align: left;">
+              <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">
+                      {html.escape(company_name)}
+                    </div>
+                    <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px; font-weight: 500;">
+                      Industrial Testing & Instrumentation Equipment • Estd. 1974
+                    </div>
+                  </td>
+                  <td align="right" valign="middle">
+                    <span style="background-color: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 16px; text-transform: uppercase;">
+                      Shortlisted Round
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              <div style="height: 3px; background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); margin-top: 18px; border-radius: 2px;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 32px 22px 32px;">
+              <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 10px;">
+                Dear {html.escape(candidate_name)},
+              </div>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #334155; margin: 0 0 14px 0;">
+                Greetings from <strong>{html.escape(company_name)}</strong>, Coimbatore!
+              </p>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #334155; margin: 0 0 20px 0;">
+                Thank you for applying for the position of <strong style="color: #2557a7;">{html.escape(job_title)}</strong>. Our recruitment committee has thoroughly evaluated your application, and we are pleased to invite you for an in-person technical & personal interview.
+              </p>
+              <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1.5px solid #2557a7; border-radius: 10px; margin-bottom: 22px; overflow: hidden;">
+                <tr>
+                  <td style="background-color: #2557a7; padding: 8px 16px;">
+                    <div style="font-size: 11px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.8px;">
+                      📌 Confirmed Interview Schedule
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 16px 18px;">
+                    <table width="100%" border="0" cellpadding="5" cellspacing="0" style="font-size: 12.5px;">
+                      <tr>
+                        <td width="30%" style="color: #64748b; font-weight: 600;">Position:</td>
+                        <td style="color: #0f172a; font-weight: 700;">{html.escape(job_title)}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #64748b; font-weight: 600;">Interview Day:</td>
+                        <td style="color: #0f172a; font-weight: 700;">{html.escape(day_name)}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #64748b; font-weight: 600;">Interview Date:</td>
+                        <td style="color: #1e3a8a; font-weight: 800; font-size: 13.5px;">{html.escape(date_str)}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #64748b; font-weight: 600;">Reporting Time:</td>
+                        <td style="color: #047857; font-weight: 800; font-size: 13.5px;">{html.escape(timing)} IST (Sharp)</td>
+                      </tr>
+                      <tr>
+                        <td style="color: #64748b; font-weight: 600;" valign="top">Venue Location:</td>
+                        <td style="color: #0f172a; font-weight: 500; line-height: 1.45;">
+                          <strong>{html.escape(company_name)}</strong><br>
+                          {venue_address}<br>
+                          <a href="{maps_link}" target="_blank" style="color: #2557a7; font-size: 11.5px; font-weight: 700; text-decoration: underline; display: inline-block; margin-top: 4px;">
+                            📍 Open Driving Directions on Google Maps
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+                <div style="font-size: 11.5px; font-weight: 700; color: #92400e; text-transform: uppercase; margin-bottom: 6px;">
+                  📋 Documents to Bring for Verification:
+                </div>
+                <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #78350f; line-height: 1.55;">
+                  <li>2 hard copies of your updated Resume / Curriculum Vitae</li>
+                  <li>Original & copies of educational certificates / technical diplomas</li>
+                  <li>Valid Government Photo Identification (Aadhaar / Driving License / Voter ID)</li>
+                  <li>Previous work experience letters or salary slips (if applicable)</li>
+                </ul>
+              </div>
+              <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+                <tr>
+                  <td align="center">
+                    <div style="font-size: 12.5px; color: #475569; margin-bottom: 8px; font-weight: 600;">
+                      Please reply to this email to confirm your attendance:
+                    </div>
+                    <a href="mailto:{hr_email}?subject=Interview%20Attendance%20Confirmation%20-%20{html.escape(candidate_name)}%20-%20{html.escape(job_title)}&body=Dear%20HR%20Team,%0A%0AI%20confirm%20my%20attendance%20for%20the%20interview%20scheduled%20on%20{html.escape(day_name)},%20{html.escape(date_str)}%20at%20{html.escape(timing)}%20IST.%0A%0AName:%20{html.escape(candidate_name)}%0ARole:%20{html.escape(job_title)}"
+                       style="display: inline-block; background-color: #2557a7; color: #ffffff; font-size: 12.5px; font-weight: 700; text-decoration: none; padding: 11px 26px; border-radius: 6px;">
+                      ✓ Click Here to Confirm Attendance
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="font-size: 12.5px; line-height: 1.5; color: #475569; margin: 0 0 18px 0;">
+                If you have any questions or need navigation assistance, please contact our HR desk at <strong>{phone_contact}</strong> or reply to this email.
+              </p>
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">Warm Regards,</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: #2557a7; margin-top: 2px;">Human Resources & Talent Acquisition Team</div>
+                <div style="font-size: 11.5px; color: #475569; margin-top: 2px;"><strong>{html.escape(company_name)}</strong></div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Rathinapuri, Coimbatore - 641027, Tamil Nadu, India</div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Helpline: {phone_contact} • Email: {hr_email}</div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 32px; text-align: center; font-size: 10.5px; color: #94a3b8; line-height: 1.4;">
+              This is an official communication from <strong>{html.escape(company_name)}</strong> recruitment team.<br>
+              © 2026 {html.escape(company_name)}. All rights reserved.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
+    return {"subject": subject, "body": plain_body, "html": html_body}
 
 
 def build_regret_email(candidate_name: str, job_title: str) -> Dict[str, str]:
     company_name = get_setting("company_name", DEFAULT_COMPANY_NAME)
+    phone_contact = "+91 93617 73377"
+    hr_email = get_setting("smtp_email", DEFAULT_SMTP_EMAIL)
+
     subject = f"Application Update: {job_title} – {company_name}"
-    body = (
+    plain_body = (
         f"Dear {candidate_name},\n\n"
         f"Thank you very much for your interest in the {job_title} position at {company_name}, and for taking the time to apply with us.\n\n"
-        f"We have carefully reviewed your application. While your background and efforts are commendable, after thoughtful "
-        f"consideration we have decided to move forward with other applicants whose specific skill set more closely aligns with the "
-        f"immediate requirements of this role.\n\n"
-        f"We have safely retained your resume in our talent database. Should another opening open up that matches your profile, "
-        f"our recruitment team will be pleased to contact you.\n\n"
+        f"We have carefully reviewed your application. While your background and efforts are commendable, after thoughtful consideration we have decided to move forward with other applicants whose specific skill set more closely aligns with the immediate requirements of this role.\n\n"
+        f"We have safely retained your resume in our talent database. Should another opening open up that matches your profile, our recruitment team will be pleased to contact you.\n\n"
         f"We sincerely thank you for your time and wish you the very best in your career pursuits.\n\n"
         f"Warm regards,\n"
         f"HR & Talent Acquisition Team\n"
         f"{company_name}\n"
         f"Rathinapuri, Coimbatore, Tamil Nadu\n"
-        f"Contact: +91 93617 73377"
+        f"Contact: {phone_contact} • Email: {hr_email}"
     )
-    return {"subject": subject, "body": body}
+
+    html_body = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Update - {html.escape(job_title)}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 25px 12px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 620px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #1e3a8a 0%, #2557a7 100%); padding: 30px 32px 24px 32px; text-align: left;">
+              <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">
+                      {html.escape(company_name)}
+                    </div>
+                    <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px; font-weight: 500;">
+                      Industrial Testing & Instrumentation Equipment • Estd. 1974
+                    </div>
+                  </td>
+                  <td align="right" valign="middle">
+                    <span style="background-color: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 16px; text-transform: uppercase;">
+                      Candidate Update
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              <div style="height: 3px; background: linear-gradient(90deg, #94a3b8 0%, #cbd5e1 100%); margin-top: 18px; border-radius: 2px;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 32px 22px 32px;">
+              <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 10px;">
+                Dear {html.escape(candidate_name)},
+              </div>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #334155; margin: 0 0 14px 0;">
+                Thank you very much for your interest in the <strong style="color: #2557a7;">{html.escape(job_title)}</strong> position at <strong>{html.escape(company_name)}</strong>, and for taking the time to share your application with us.
+              </p>
+              <p style="font-size: 13.5px; line-height: 1.6; color: #334155; margin: 0 0 16px 0;">
+                We received an exceptionally strong volume of applications for this posting. While your qualifications and experience are commendable, after thoughtful deliberation our hiring team has decided to advance with candidates whose specific domain experience more directly aligns with the immediate technical requirements of this position.
+              </p>
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+                <div style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">
+                  💼 Active Talent Community Retention
+                </div>
+                <div style="font-size: 12px; color: #64748b; line-height: 1.5;">
+                  We have safely archived your profile in our candidate repository. As Nunes Instrumentation continues to expand its manufacturing and technical support operations in Coimbatore, our HR team will proactively reconnect with you should matching vacancies arise.
+                </div>
+              </div>
+              <p style="font-size: 12.5px; line-height: 1.5; color: #475569; margin: 0 0 18px 0;">
+                We sincerely thank you for your time and wish you every success in your ongoing professional endeavors.
+              </p>
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">Warm Regards,</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: #2557a7; margin-top: 2px;">Human Resources & Talent Acquisition Team</div>
+                <div style="font-size: 11.5px; color: #475569; margin-top: 2px;"><strong>{html.escape(company_name)}</strong></div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Rathinapuri, Coimbatore - 641027, Tamil Nadu, India</div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Helpline: {phone_contact} • Email: {hr_email}</div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 32px; text-align: center; font-size: 10.5px; color: #94a3b8; line-height: 1.4;">
+              © 2026 {html.escape(company_name)}. All rights reserved.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
+    return {"subject": subject, "body": plain_body, "html": html_body}
 
 
 # ============================================================================
@@ -638,6 +1005,53 @@ def api_candidates(role: Optional[str] = None, search: Optional[str] = None, fil
     }
 
 
+class RoleCreateRequest(BaseModel):
+    title: str
+    department: Optional[str] = "Engineering & Operations"
+    location: Optional[str] = "Coimbatore, Tamil Nadu"
+    job_type: Optional[str] = "Full-Time"
+    salary: Optional[str] = "₹2,50,000 - ₹5,00,000 per year"
+    status: Optional[str] = "OPEN"
+    description: str
+    indeed_url: Optional[str] = ""
+
+
+@app.post("/api/roles/create")
+def api_create_role(req: RoleCreateRequest):
+    title_clean = req.title.strip()
+    if not title_clean:
+        raise HTTPException(status_code=400, detail="Role title is required.")
+
+    now_str = datetime.now(timezone.utc).isoformat()
+    role_id = re.sub(r"[^a-zA-Z0-9]+", "-", title_clean.lower()).strip("-")
+
+    with get_db() as conn:
+        existing = conn.execute("SELECT id FROM roles WHERE title=?", (title_clean,)).fetchone()
+        if existing:
+            conn.execute("""
+                UPDATE roles
+                SET department=?, location=?, job_type=?, salary=?, status=?, description=?, updated_at=?
+                WHERE title=?
+            """, (
+                req.department or "General", req.location or "Coimbatore, Tamil Nadu",
+                req.job_type or "Full-Time", req.salary or "", (req.status or "OPEN").upper(),
+                req.description, now_str, title_clean
+            ))
+            msg = f"Role '{title_clean}' updated successfully."
+        else:
+            conn.execute("""
+                INSERT INTO roles (id, title, department, location, job_type, salary, status, description, indeed_url, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                role_id, title_clean, req.department or "General", req.location or "Coimbatore, Tamil Nadu",
+                req.job_type or "Full-Time", req.salary or "", (req.status or "OPEN").upper(),
+                req.description, req.indeed_url or "", now_str
+            ))
+            msg = f"New role '{title_clean}' posted and activated successfully."
+
+    return {"ok": True, "title": title_clean, "role_id": role_id, "message": msg}
+
+
 class RoleUpdateRequest(BaseModel):
     title: str
     description: str
@@ -770,38 +1184,60 @@ def api_send_thank_you(req: SendThankYouRequest):
             query = "SELECT * FROM candidates WHERE mail1_status != 'SENT'"
             targets = [dict(r) for r in conn.execute(query).fetchall()]
 
-    sent_count = 0
-    errors = []
-    now_str = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M:%S IST")
+    if not targets:
+        return {
+            "ok": True,
+            "mail_type": "MAIL_1_THANK_YOU",
+            "targeted": 0,
+            "sent_count": 0,
+            "errors": [],
+            "message": "All selected candidates have already received Mail 1 (Thank You). Duplicate email blocked."
+        }
 
-    # Send real SMTP for up to 15 candidates per interactive request to avoid HTTP timeout, and record all
-    for idx, cand in enumerate(targets):
+    now_str = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M:%S IST")
+    batch_items = []
+    for cand in targets:
         mail_content = build_thank_you_email(cand["name"], cand["job_title"])
         recipient = cand.get("direct_email") or cand.get("email") or cand.get("indeed_email")
-        smtp_ok = True
-        err_msg = None
+        if recipient:
+            batch_items.append({
+                "candidate_id": cand["id"],
+                "candidate_name": cand["name"],
+                "job_title": cand["job_title"],
+                "recipient": recipient,
+                "cc": cand.get("indeed_email") if cand.get("indeed_email") and cand.get("indeed_email") != recipient else None,
+                "subject": mail_content["subject"],
+                "body": mail_content["body"],
+                "html": mail_content["html"]
+            })
 
-        if req.live_smtp and idx < 8 and recipient:
-            res = send_smtp_email(recipient, mail_content["subject"], mail_content["body"])
-            smtp_ok = res["ok"]
-            err_msg = res.get("error")
+    if req.live_smtp and batch_items:
+        smtp_results = send_smtp_email_batch(batch_items)
+        result_map = {res["candidate_id"]: res for res in smtp_results if "candidate_id" in res}
+    else:
+        result_map = {item["candidate_id"]: {"ok": True, "transport": "simulated"} for item in batch_items}
 
-        if smtp_ok:
-            sent_count += 1
-            with get_db() as conn:
+    sent_count = 0
+    errors = []
+    with get_db() as conn:
+        for item in batch_items:
+            cid = item["candidate_id"]
+            res = result_map.get(cid, {"ok": False, "error": "Transmission failed"})
+            if res.get("ok"):
+                sent_count += 1
                 conn.execute(
                     "UPDATE candidates SET mail1_status='SENT', mail1_sent_at=?, hiring_stage=CASE WHEN hiring_stage='APPLIED' THEN 'THANK_YOU_SENT' ELSE hiring_stage END WHERE id=?",
-                    (now_str, cand["id"])
+                    (now_str, cid)
                 )
                 conn.execute("""
-                    INSERT INTO email_logs (candidate_id, candidate_name, recipient_email, job_title, mail_type, subject, body, status, interview_schedule, sent_at)
-                    VALUES (?, ?, ?, ?, 'MAIL_1_THANK_YOU', ?, ?, 'SENT', 'Initial Application Acknowledgement', ?)
+                    INSERT INTO email_logs (candidate_id, candidate_name, recipient_email, job_title, mail_type, subject, body, html_body, status, interview_schedule, sent_at)
+                    VALUES (?, ?, ?, ?, 'MAIL_1_THANK_YOU', ?, ?, ?, 'SENT', 'Initial Application Acknowledgement', ?)
                 """, (
-                    cand["id"], cand["name"], recipient, cand["job_title"],
-                    mail_content["subject"], mail_content["body"], now_str
+                    cid, item["candidate_name"], item["recipient"], item["job_title"],
+                    item["subject"], item["body"], item["html"], now_str
                 ))
-        else:
-            errors.append({"candidate": cand["name"], "error": err_msg})
+            else:
+                errors.append({"candidate": item["candidate_name"], "error": res.get("error")})
 
     return {
         "ok": True,
@@ -858,27 +1294,41 @@ def api_send_interview(req: SendInterviewRequest):
             "targeted": 0,
             "sent_count": 0,
             "interview_schedule": schedule,
+            "errors": [],
             "message": "Selected candidate(s) have already received their Interview Invitation. Duplicate email blocked."
         }
 
-    sent_count = 0
-    errors = []
     now_str = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M:%S IST")
-
-    for idx, cand in enumerate(targets):
+    batch_items = []
+    for cand in targets:
         mail_content = build_interview_email(cand["name"], cand["job_title"], schedule)
         recipient = cand.get("direct_email") or cand.get("email") or cand.get("indeed_email")
-        smtp_ok = True
-        err_msg = None
+        if recipient:
+            batch_items.append({
+                "candidate_id": cand["id"],
+                "candidate_name": cand["name"],
+                "job_title": cand["job_title"],
+                "recipient": recipient,
+                "cc": cand.get("indeed_email") if cand.get("indeed_email") and cand.get("indeed_email") != recipient else None,
+                "subject": mail_content["subject"],
+                "body": mail_content["body"],
+                "html": mail_content["html"]
+            })
 
-        if req.live_smtp and idx < 10 and recipient:
-            res = send_smtp_email(recipient, mail_content["subject"], mail_content["body"])
-            smtp_ok = res["ok"]
-            err_msg = res.get("error")
+    if req.live_smtp and batch_items:
+        smtp_results = send_smtp_email_batch(batch_items)
+        result_map = {res["candidate_id"]: res for res in smtp_results if "candidate_id" in res}
+    else:
+        result_map = {item["candidate_id"]: {"ok": True, "transport": "simulated"} for item in batch_items}
 
-        if smtp_ok:
-            sent_count += 1
-            with get_db() as conn:
+    sent_count = 0
+    errors = []
+    with get_db() as conn:
+        for item in batch_items:
+            cid = item["candidate_id"]
+            res = result_map.get(cid, {"ok": False, "error": "Transmission failed"})
+            if res.get("ok"):
+                sent_count += 1
                 conn.execute("""
                     UPDATE candidates
                     SET selected_by_recruiter=1,
@@ -890,18 +1340,18 @@ def api_send_interview(req: SendInterviewRequest):
                         interview_time='11:00 AM'
                     WHERE id=?
                 """, (
-                    now_str, schedule["interview_day"], schedule["interview_date"], cand["id"]
+                    now_str, schedule["interview_day"], schedule["interview_date"], cid
                 ))
                 conn.execute("""
-                    INSERT INTO email_logs (candidate_id, candidate_name, recipient_email, job_title, mail_type, subject, body, status, interview_schedule, sent_at)
-                    VALUES (?, ?, ?, ?, 'MAIL_2_INTERVIEW_INVITE', ?, ?, 'SENT', ?, ?)
+                    INSERT INTO email_logs (candidate_id, candidate_name, recipient_email, job_title, mail_type, subject, body, html_body, status, interview_schedule, sent_at)
+                    VALUES (?, ?, ?, ?, 'MAIL_2_INTERVIEW_INVITE', ?, ?, ?, 'SENT', ?, ?)
                 """, (
-                    cand["id"], cand["name"], recipient, cand["job_title"],
-                    mail_content["subject"], mail_content["body"],
+                    cid, item["candidate_name"], item["recipient"], item["job_title"],
+                    item["subject"], item["body"], item["html"],
                     schedule["interview_label"], now_str
                 ))
-        else:
-            errors.append({"candidate": cand["name"], "error": err_msg})
+            else:
+                errors.append({"candidate": item["candidate_name"], "error": res.get("error")})
 
     return {
         "ok": True,
@@ -945,44 +1395,55 @@ def api_send_regret(req: SendRegretRequest):
             "mail_type": "MAIL_REGRET",
             "targeted": 0,
             "sent_count": 0,
+            "errors": [],
             "message": "All candidates in this selection have already received regret notifications. Duplicate email blocked."
         }
 
-    sent_count = 0
-    errors = []
     now_str = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M:%S IST")
-
-    for idx, cand in enumerate(targets):
+    batch_items = []
+    for cand in targets:
         cname = cand["name"].strip()
         if len(cname) < 3 or any(b in cname.lower() for b in ["file", "executive", "driver", "download", "resume"]):
             continue
 
         mail_content = build_regret_email(cname, cand["job_title"])
         recipient = cand.get("direct_email") or cand.get("email") or cand.get("indeed_email")
-        smtp_ok = True
-        err_msg = None
+        if recipient:
+            batch_items.append({
+                "candidate_id": cand["id"],
+                "candidate_name": cname,
+                "job_title": cand["job_title"],
+                "recipient": recipient,
+                "cc": cand.get("indeed_email") if cand.get("indeed_email") and cand.get("indeed_email") != recipient else None,
+                "subject": mail_content["subject"],
+                "body": mail_content["body"],
+                "html": mail_content["html"]
+            })
 
-        if req.live_smtp and idx < 8 and recipient:
-            res = send_smtp_email(recipient, mail_content["subject"], mail_content["body"])
-            smtp_ok = res["ok"]
-            err_msg = res.get("error")
+    if req.live_smtp and batch_items:
+        smtp_results = send_smtp_email_batch(batch_items)
+        result_map = {res["candidate_id"]: res for res in smtp_results if "candidate_id" in res}
+    else:
+        result_map = {item["candidate_id"]: {"ok": True, "transport": "simulated"} for item in batch_items}
 
-        if smtp_ok:
-            sent_count += 1
-            with get_db() as conn:
-                conn.execute(
-                    "UPDATE candidates SET hiring_stage='REJECTED' WHERE id=?",
-                    (cand["id"],)
-                )
+    sent_count = 0
+    errors = []
+    with get_db() as conn:
+        for item in batch_items:
+            cid = item["candidate_id"]
+            res = result_map.get(cid, {"ok": False, "error": "Transmission failed"})
+            if res.get("ok"):
+                sent_count += 1
+                conn.execute("UPDATE candidates SET hiring_stage='REJECTED' WHERE id=?", (cid,))
                 conn.execute("""
-                    INSERT INTO email_logs (candidate_id, candidate_name, recipient_email, job_title, mail_type, subject, body, status, interview_schedule, sent_at)
-                    VALUES (?, ?, ?, ?, 'MAIL_REGRET', ?, ?, 'SENT', 'Polite Regret / Not Shortlisted', ?)
+                    INSERT INTO email_logs (candidate_id, candidate_name, recipient_email, job_title, mail_type, subject, body, html_body, status, interview_schedule, sent_at)
+                    VALUES (?, ?, ?, ?, 'MAIL_REGRET', ?, ?, ?, 'SENT', 'Polite Regret / Not Shortlisted', ?)
                 """, (
-                    cand["id"], cname, recipient, cand["job_title"],
-                    mail_content["subject"], mail_content["body"], now_str
+                    cid, item["candidate_name"], item["recipient"], item["job_title"],
+                    item["subject"], item["body"], item["html"], now_str
                 ))
-        else:
-            errors.append({"candidate": cname, "error": err_msg})
+            else:
+                errors.append({"candidate": item["candidate_name"], "error": res.get("error")})
 
     return {
         "ok": True,
